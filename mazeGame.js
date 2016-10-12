@@ -641,8 +641,13 @@ var Path = function(start, end) {
         this.isPortal = true
     } else if (lineCross(start, end)) {
         if ( start.isValidPortal() ) {
-            this.end = start.level.getOtherPortal(start)
-            this.isPortal = true
+            var tar = start.level.getOtherPortal(start)
+            if ( lineCross(end,tar) ) {
+                return
+            } else {
+                this.isPortal = true
+                this.end = tar    
+            }
         } else {
             var tar = this.start.level.getNearestActivePortal(start)
             if ( tar != null ) {
