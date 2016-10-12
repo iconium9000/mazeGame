@@ -803,6 +803,7 @@ function init() {
 	Game.canvas.addEventListener("mousemove", mouseDragged, false)
 	Game.canvas.addEventListener("touchend", mouseReleased, false)
 	Game.canvas.addEventListener("mouseup", mouseReleased, false)
+	Game.canvas.addEventListener("touchcancel", mouseReleased, false)
 
 	
 	$( window ).resize( resize )
