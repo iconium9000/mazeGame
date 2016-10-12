@@ -321,12 +321,14 @@ function drawNode(n) {
         return
     }
     var g = Game.g
+    var r = Game.lvl.val.radius / Game.nodeRadiusFactor
+
     if (n.gate == null ) {
         g.fillStyle = Game.wallColor
     } else {
         g.fillStyle = n.gate.isOpen() ? Game.doorColor : Game.closeColor
     }
-    n.point.fillCircle(g, 10)
+    n.point.fillCircle(g, r)
 }
 function clearGate(n) {
     n.gate = null
@@ -502,7 +504,7 @@ function drawKey(t) {
     g.lineWidth = 4
     g.setLineDash([0])
     g.strokeStyle = Game.wallColor
-    var r = t.level.radius * 0.7
+    var r = t.level.radius / Game.keyRadiusFactor
     if (key.isSquare) {
         t.point.drawSquare(g, r)
     } else {
@@ -532,14 +534,15 @@ function drawHandle(t) {
         return
     }
     var g = Game.g
+    var r = Game.lvl.val.radius / Game.handleRadiusFactor
     g.strokeStyle = g.fillStyle = h.gate.isOpen() ? h.color : Game.closeColor
     g.lineWidth = 4
     g.setLineDash([1, 8])
     t.point.drawLine(g, h.parent)
     if (h.isSquare) {
-        t.point.fillSquare(g, 7)
+        t.point.fillSquare(g, r)
     } else {
-        t.point.fillCircle(g, 7)
+        t.point.fillCircle(g, r)
     }
 }
 //------------------------------------------------------------
@@ -821,6 +824,9 @@ var Game = {
     portalColor: '#FF00FF',
     closeColor: 'red',
     radius: 24,
+    handleRadiusFactor:5,
+    nodeRadiusFactor:2.5,
+    keyRadiusFactor:2,
     playerSpeed: 0.009,
     pulseSpeed: 0.002,
     turnSpeed: 0.001,
