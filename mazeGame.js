@@ -964,7 +964,7 @@ function tick() {
 }
 function mousePressed(e) {
     Game.mouseDown = true
-    if (e.clientY + 50 > Game.canvas.height) {
+    if (e.clientY + 2 * Game.menuBar > Game.canvas.height) {
         var x = e.clientX
         var w = Game.canvas.width / 3
         if (x < w) {
@@ -985,7 +985,7 @@ function mousePressed(e) {
     }
 }
 function mouseDragged(e) {
-    if (e.clientY + 50 > Game.canvas.height) {
+    if (e.clientY + 2 * Game.menuBar > Game.canvas.height) {
         return
     }
     var f = Game.mouse.freeA()
