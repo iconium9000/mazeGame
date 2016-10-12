@@ -367,14 +367,14 @@ function drawLink(l) {
     if (l.gate == null ) {
         g.strokeStyle = Game.wallColor
         g.lineWidth = r / Game.wallWidthFactor
-        g.setLineDash([0])
+        g.setlineDash([])
     } else {
         if (l.isOpen()) {
             g.strokeStyle = Game.doorColor
             g.setLineDash([r / Game.wallWidthFactor])
         } else {
             g.strokeStyle = Game.closeColor
-            g.setLineDash([0])
+            g.setlineDash([])
         }
         g.lineWidth = r / Game.doorWidthFactor
     }
@@ -448,7 +448,7 @@ function drawPortal(t) {
     var g = Game.g
     g.strokeStyle = p.gate.isOpen() ? Game.portalColor : Game.closeColor
     g.lineWidth = 4
-    g.setLineDash([0])
+    g.setlineDash([])
     var r = t.level.radius * Math.abs(Math.cos(p.turn))
     t.point.drawCircle(g, r)
     p.turn += window.elapsed * Game.pulseSpeed
@@ -479,7 +479,7 @@ function drawPlayer(tar) {
         g.strokeStyle = Game.wallColor
     }
     g.lineWidth = r / Game.doorWidthFactor
-    g.setLineDash([0])
+    g.setlineDash([])
     freePoint.setAngle(2 * player.turn * Math.PI).scale(r)
     tar.point.freeA().sum(freePoint)
     tar.point.freeB().sub(freePoint)
@@ -505,7 +505,7 @@ function drawKey(t) {
     var g = Game.g
     var r = t.level.radius
     g.lineWidth = r / Game.doorWidthFactor
-    g.setLineDash([0])
+    g.setlineDash([])
     g.strokeStyle = Game.wallColor
     if (key.isSquare) {
         t.point.drawSquare(g, r / Game.keyRadiusFactor)
