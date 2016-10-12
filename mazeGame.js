@@ -470,6 +470,7 @@ function drawPlayer(tar) {
     }
     var g = Game.g
     var path = tar.level.path
+    var r = tar.level.radius
     if (player == tar.level.sel) {
         player.turn += window.elapsed * Game.turnSpeed
         player.turn %= Math.PI * 2
@@ -477,9 +478,9 @@ function drawPlayer(tar) {
     } else {
         g.strokeStyle = Game.wallColor
     }
-    g.lineWidth = 4
+    g.lineWidth = r / Game.doorWidthFactor
     g.setLineDash([0])
-    freePoint.setAngle(2 * player.turn * Math.PI).scale(tar.level.radius)
+    freePoint.setAngle(2 * player.turn * Math.PI).scale(r)
     tar.point.freeA().sum(freePoint)
     tar.point.freeB().sub(freePoint)
     freeAPoint.drawLine(g, freeBPoint)
@@ -502,14 +503,14 @@ function drawKey(t) {
         return
     }
     var g = Game.g
-    g.lineWidth = 4
+    var r = t.level.radius
+    g.lineWidth = r / Game.doorWidthFactor
     g.setLineDash([0])
     g.strokeStyle = Game.wallColor
-    var r = t.level.radius / Game.keyRadiusFactor
     if (key.isSquare) {
-        t.point.drawSquare(g, r)
+        t.point.drawSquare(g, r / Game.keyRadiusFactor)
     } else {
-        t.point.drawCircle(g, r)
+        t.point.drawCircle(g, r / Game.keyRadiusFactor)
     }
 }
 //------------------------------------------------------------
@@ -570,16 +571,23 @@ function lineCross(a, b) {
     var pb = b.point
     var lvl = a.level
     return lvl.links.findif(function(l) {
-        if (l.gate == null || !l.gate.isOpen())
-            return l.line.lineCross(pa, pb)
-        else if (a.handle == null || a.handle.gate != l.gate) {
+        if ( !l.line.lineCross(pa, pb) )
             return false
-        } else if (!Game.releaseKey) {
-            Game.releaseKey = l.line.lineCross(pa, pb)
+        if (l.gate == null || !l.gate.isOpen()) {
+            return true
+        } else if ( a.handle == null ) {
             return false
+        } else if ( a.handle.gate == l.gate ) {
+            if ( a.key == null ) {
+                return true
+            } else {
+                Game.releaseKey = true
+                return false
+            }
         } else {
             return false
         }
+         
     })
 }
 Target.prototype.isValidPortal = function() {
