@@ -446,7 +446,7 @@ function drawPortal(t) {
     g.strokeStyle = p.gate.isOpen() ? Game.portalColor : Game.closeColor
     g.lineWidth = 4
     g.setLineDash([0])
-    var r = Game.radius * Math.abs(Math.cos(p.turn))
+    var r = t.level.radius * Math.abs(Math.cos(p.turn))
     t.point.drawCircle(g, r)
     p.turn += window.elapsed * Game.pulseSpeed
     p.turn %= Math.PI * 2
@@ -476,7 +476,7 @@ function drawPlayer(tar) {
     }
     g.lineWidth = 4
     g.setLineDash([0])
-    freePoint.setAngle(2 * player.turn * Math.PI).scale(Game.radius)
+    freePoint.setAngle(2 * player.turn * Math.PI).scale(tar.level.radius)
     tar.point.freeA().sum(freePoint)
     tar.point.freeB().sub(freePoint)
     freeAPoint.drawLine(g, freeBPoint)
@@ -502,10 +502,11 @@ function drawKey(t) {
     g.lineWidth = 4
     g.setLineDash([0])
     g.strokeStyle = Game.wallColor
+    var r = t.level.radius * 0.7
     if (key.isSquare) {
-        t.point.drawSquare(g, 15)
+        t.point.drawSquare(g, r)
     } else {
-        t.point.drawCircle(g, 15)
+        t.point.drawCircle(g, r)
     }
 }
 //------------------------------------------------------------
@@ -677,6 +678,7 @@ Path.prototype.draw = function(g) {
 var Level = function(s, i) {
     this.score = s
     this.index = i
+    this.radius = 28
     this.nodes = new List
     this.links = new List
     this.portals = new List
@@ -731,6 +733,7 @@ Level.prototype.resize = function(w, h) {
     }
     min.set(pad, pad)
     this.maxPoint.set(w + pad, h + pad)
+    this.radius = Game.radius * this.maxPoint.length() / this.startSize
 }
 Level.prototype.resetLevel = function() {
     if (this.path != null && this.path.transport != null ) {
@@ -763,13 +766,15 @@ Level.prototype.getOtherPortal = function(t) {
     })
 }
 Level.prototype.getNode = function(p) {
+    var r = this.radius
     return this.nodes.returnif(function(n) {
-        return n.point.dist(p) < Game.radius
+        return n.point.dist(p) < r
     })
 }
 Level.prototype.getTarget = function(p) {
+    var r = this.radius
     return this.targets.returnif(function(n) {
-        return n.point.dist(p) < Game.radius
+        return n.point.dist(p) < r
     })
 }
 Level.prototype.setTarget = function(p) {
@@ -815,7 +820,7 @@ var Game = {
     doorColor: '#00FF00',
     portalColor: '#FF00FF',
     closeColor: 'red',
-    radius: 28,
+    radius: 24,
     playerSpeed: 0.009,
     pulseSpeed: 0.002,
     turnSpeed: 0.001,
@@ -901,8 +906,10 @@ var Game = {
                     }
                 }
             }
+            lvl.startSize = lvl.maxPoint.length()
             lvl.resize(Game.canvas.width, Game.canvas.height)
             console.log("Level \t" + lvl.index + "\t" + lvl.nodes.size() + "\t" + lvl.links.size() + "\t" + lvl.targets.size() + "\t" + lvl.score + "\t")
+
         }
         Game.lvl = Game.levels.head
     }
@@ -983,7 +990,6 @@ function mouseReleased(e) {
 function resize(e) {
     var w = Game.canvas.width = window.innerWidth
     var h = Game.canvas.height = window.innerHeight
-    console.log(w + " " + h)
     Game.levels.foreach(function(l) {
         l.resize(w, h)
     })
