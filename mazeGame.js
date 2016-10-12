@@ -810,16 +810,22 @@ Level.prototype.resize = function(w,h) {
 	var pad = 30
 	w -= 2 * pad
 	h -= 2 * pad + Game.menuBar
-	var x = w / max.x
+
+	var swap = (w > h) != (max.x > max.y)
+
 	var scale = function(n) {
 		if ( n == null )
 			return
 		var p = n.point
-		p.sub(min)
-		p.x *= w / max.x
-		p.y *= h / max.y
-		p.x += pad
-		p.y += pad
+
+		if ( swap ) {
+			var x = p.x
+			p.x = p.y * max.x / max.y
+			p.y = x	* max.y / max.x
+		}
+
+		p.x = (p.x-min.x) * w / max.x + pad
+		p.y = (p.y-min.y) * h / max.y + pad
  	}
 	this.nodes.foreach(scale)
 	this.targets.foreach(scale)
