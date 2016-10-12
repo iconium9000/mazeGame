@@ -471,7 +471,7 @@ function drawPlayer(tar) {
     var g = Game.g
     var path = tar.level.path
     var r = tar.level.radius
-    if (player == tar.level.sel) {
+    if (tar == Game.lvl.val.sel) {
         player.turn += window.elapsed * Game.turnSpeed
         player.turn %= Math.PI * 2
         g.strokeStyle = 'orange'
@@ -603,6 +603,7 @@ Target.prototype.movePlayerFrom = function(target) {
     var wasEmpty = this.isEmpty()
     this.player = target.player
     target.player = null
+    this.level.sel = this
     if (this.key == null && !Game.releaseKey) {
         this.key = target.key
         target.key = null
@@ -630,6 +631,7 @@ var Path = function(start, end) {
     this.start = start
     this.end = end
     this.isPortal = false
+    var lvl = this.start.level
     if (start.player != null && end.player != null ) {
         return
     } else if (start == end) {
@@ -638,23 +640,35 @@ var Path = function(start, end) {
     } else if (start.isValidPortal() && end.isValidPortal()) {
         this.isPortal = true
     } else if (lineCross(start, end)) {
-        return
+        if ( start.isValidPortal() ) {
+            this.end = start.level.getOtherPortal(start)
+            this.isPortal = true
+        } else {
+            var tar = this.start.level.getNearestActivePortal(start)
+            if ( tar != null ) {
+                this.end = tar
+            } else {
+                return
+            }
+        }
     }
     this.isValid = true
     this.transport = null
 }
 Path.prototype.startPath = function() {
-    if (this.start.key != null && !Game.releaseKey) {
-        if (this.end.key != null )
-            Game.releaseKey = true;
-        else if (this.end.handle != null && this.end.handle.isSquare != this.start.key.isSquare)
-            Game.releaseKey = true;
+    if ( this.isValid ) {
+        if (this.start.key != null && !Game.releaseKey) {
+            if (this.end.key != null )
+                Game.releaseKey = true;
+            else if (this.end.handle != null && this.end.handle.isSquare != this.start.key.isSquare)
+                Game.releaseKey = true;
+        }
+        var lvl = this.start.level
+        var p = new Point().copy(this.start.point)
+        this.transport = new Target(lvl,p)
+        this.transport.movePlayerFrom(this.start)
+        this.dist = this.start.point.dist(this.end.point)
     }
-    var lvl = this.start.level
-    var p = new Point().copy(this.start.point)
-    this.transport = new Target(lvl,p)
-    this.transport.movePlayerFrom(this.start)
-    this.dist = this.start.point.dist(this.end.point)
 }
 Path.prototype.draw = function(g) {
     g.strokeStyle = Game.wallColor
@@ -671,8 +685,13 @@ Path.prototype.draw = function(g) {
             this.end.movePlayerFrom(this.transport)
             Game.releaseKey = r
             if (!this.isPortal && this.end.isValidPortal()) {
+                var po = this.end.level.getOtherPortal(this.end)
+                if ( po.player != null ) {
+                    this.transport = null
+                    return
+                }
                 this.start = this.end
-                this.end = this.start.level.getOtherPortal(this.start)
+                this.end = po
                 this.isPortal = true
                 this.startPath()
             } else {
@@ -777,6 +796,12 @@ Level.prototype.getOtherPortal = function(t) {
         return tar.portal != null && tar.portal.gate.isOpen() && t != tar
     })
 }
+Level.prototype.getNearestActivePortal = function(t) {
+    return this.portals.returnif(function(tar) {
+        return tar.portal != null && tar.portal.gate.isOpen() && !lineCross(t,tar)
+    })
+}
+
 Level.prototype.getNode = function(p) {
     var r = this.radius
     return this.nodes.returnif(function(n) {
@@ -791,9 +816,9 @@ Level.prototype.getTarget = function(p) {
 }
 Level.prototype.setTarget = function(p) {
     var tar = this.getTarget(p)
-    if (this.path == null ) {
+    if (this.sel == null) {
         if (tar != null && tar.player != null ) {
-            this.sel = tar.player
+            this.sel = tar
             this.path = new Path(tar,tar)
         }
         return
@@ -802,7 +827,7 @@ Level.prototype.setTarget = function(p) {
         return
     }
 
-    if (this.path.transport != null )
+    if (this.path != null && this.path.transport != null )
         return
     else if (tar == null )
         tar = new Target(this,new Point().copy(p))
@@ -811,13 +836,13 @@ Level.prototype.setTarget = function(p) {
             this.sel = null
             this.path = null
         } else {
-            this.sel = tar.player
+            this.sel = tar
             this.path = new Path(tar,tar)
             Game.releaseKey = true
         }
         return
     }
-    var path = new Path(this.path.end,tar)
+    var path = new Path(this.sel,tar)
     if (path.isValid) {
         this.path = path
         path.startPath()
@@ -990,16 +1015,11 @@ function mouseDragged(e) {
     }
     var f = Game.mouse.freeA()
     var n = Game.mouse.set(e.clientX, e.clientY)
-    if (false && Game.mouseDown && f.x != null && f.y != null ) {
-        f.sub(n)
-        var l = Game.lvl.val
-        l.nodes.foreach(function(n) {
-            n.point.sub(f)
-        })
-        l.targets.foreach(function(t) {
-            t.point.sub(f)
-        })
+    var lvl = Game.lvl.val
+    if ( lvl.path == null || lvl.path.transport == null ) {
+
     }
+    
 }
 function mouseReleased(e) {
     Game.mouseDown = false
