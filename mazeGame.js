@@ -775,12 +775,16 @@ Level.prototype.getTarget = function(p) {
 Level.prototype.setTarget = function(p) {
     var tar = this.getTarget(p)
     if (this.path == null ) {
-        if (tar != null ) {
+        if (tar != null && tar.player != null ) {
             this.sel = tar.player
             this.path = new Path(tar,tar)
         }
         return
     }
+    if ( this.sel == null ) {
+        return
+    }
+
     if (this.path.transport != null )
         return
     else if (tar == null )
@@ -792,6 +796,7 @@ Level.prototype.setTarget = function(p) {
         } else {
             this.sel = tar.player
             this.path = new Path(tar,tar)
+            Game.releaseKey = true
         }
         return
     }
@@ -810,7 +815,7 @@ var Game = {
     doorColor: '#00FF00',
     portalColor: '#FF00FF',
     closeColor: 'red',
-    radius: 25,
+    radius: 28,
     playerSpeed: 0.009,
     pulseSpeed: 0.002,
     turnSpeed: 0.001,
