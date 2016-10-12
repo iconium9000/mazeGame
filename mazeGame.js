@@ -2,6 +2,19 @@
 // POINT.JS
 //------------------------------------------------------------
 
+function notEqualOrZero(a,b) {
+	return a != b && a != 0 && b != 0
+}
+
+function side(a,b,c) {
+	var A = (p.x - b.x) * (a.y - b.y)
+	var B = (p.y - b.y) * (a.x - b.x)
+	if (A == B)
+		return 0
+	else
+		return A > B ? 1 : -1
+}
+
 var Point = function() {
 	x = 0
 	y = 0
@@ -50,6 +63,13 @@ Point.prototype.factor = function(f) {
 	return this
 }
 
+Point.prototype.unit = function(f) {
+	var l = f / this.length()
+	this.x *= l
+	this.y *= l
+	return this
+}
+
 Point.prototype.length = function() {
 	return Math.sqrt(this.x*this.x + this.y*this.y)
 }
@@ -87,25 +107,39 @@ Point.prototype.freeB = function() {
 	return freeBPoint.copy(this)
 }
 
-Point.prototype.drawCircle = function(ctx,r) {
-	ctx.beginPath()
-	ctx.arc( this.x, this.y, r, 0, Math.PI*2, true)
-	ctx.closePath()
-	ctx.stroke()
+Point.prototype.drawCircle = function(g,r) {
+	g.beginPath()
+	g.arc( this.x, this.y, r, 0, Math.PI*2, true)
+	g.closePath()
+	g.stroke()
 }
 
-Point.prototype.fillCircle = function(ctx,r) {
-	ctx.beginPath()
-	ctx.arc( this.x, this.y, r, 0, Math.PI*2, true)
-	ctx.closePath()
-	ctx.fill()
+Point.prototype.fillCircle = function(g,r) {
+	g.beginPath()
+	g.arc( this.x, this.y, r, 0, Math.PI*2, true)
+	g.closePath()
+	g.fill()
 }
 
-Point.prototype.drawLine = function(ctx, p) {
-	ctx.beginPath();
-	ctx.moveTo(this.x,this.y);
-	ctx.lineTo(p.x,p.y);
-	ctx.stroke();
+Point.prototype.drawSquare = function(g,r) {
+	g.beginPath()
+	g.rect(this.x - r, this.y - r, 2 * r, 2 * r)
+	g.closePath()
+	g.stroke()
+}
+
+Point.prototype.fillSquare = function(g,r) {
+	g.beginPath()
+	g.rect(this.x - r, this.y - r, 2 * r, 2 * r)
+	g.closePath()
+	g.fill()
+}
+
+Point.prototype.drawLine = function(g, p) {
+	g.beginPath()
+	g.moveTo(this.x,this.y)
+	g.lineTo(p.x,p.y)
+	g.stroke()
 }
 
 //------------------------------------------------------------
@@ -121,11 +155,15 @@ Line.prototype.length = function() {
 	return this.a.dist(this.b)
 }
 
-Line.prototype.draw = function(ctx) {
-	ctx.beginPath();
-	ctx.moveTo(this.a.x,this.a.y);
-	ctx.lineTo(this.b.x,this.b.y);
-	ctx.stroke();
+Line.prototype.draw = function(g) {
+	g.beginPath()
+	g.moveTo(this.a.x,this.a.y)
+	g.lineTo(this.b.x,this.b.y)
+	g.stroke()
+}
+
+Line.prototype.lineCross = function(a,b) {
+	return bu(side(a, b, la), side(a, b, lb)) && bu(side(la, lb, a), side(la, lb, b))
 }
 
 //------------------------------------------------------------
@@ -314,13 +352,16 @@ var Node = function(p) {
 }
 
 function drawNode(n) {
-	var ctx = Game.ctx
 	if ( n.gate == null ) {
-		ctx.fillStyle = 'black'
-	} else {
-		ctx.fillStyle = n.gate.isOpen() ? 'green' : 'red'
+		return
 	}
-	n.point.fillCircle(ctx,10)
+	var g = Game.g
+	if ( n.gate == null ) {
+		g.fillStyle = 'black'
+	} else {
+		g.fillStyle = n.gate.isOpen() ? 'green' : 'red'
+	}
+	n.point.fillCircle(g,10)
 }
 
 function clearGate(n) {
@@ -337,7 +378,11 @@ var Gate = function(m) {
 }
 
 Gate.prototype.isOpen = function() {
-	return this.targets.alltrue(isActive) && (this.master == null || this.master.countif(isPortalActive))
+	if ( this.targets.alltrue(isActive) ) {
+		return this.master == null || this.master.countif(isPortalActive)
+	} else {
+		return
+	}
 }
 
 //------------------------------------------------------------
@@ -357,27 +402,27 @@ var Link = function(a,b,d) {
 }
 
 function drawLink(l) {
-	var ctx = Game.ctx
+	var g = Game.g
 	if ( l.gate == null ) {
-		ctx.strokeStyle = 'black'
-		ctx.lineWidth = 10
-		ctx.setLineDash([0]);
+		g.strokeStyle = 'black'
+		g.lineWidth = 10
+		g.setLineDash([0])
 	} else {
 		if ( l.isOpen() ) {
-			ctx.strokeStyle = 'green'
-			ctx.setLineDash([10]);
+			g.strokeStyle = 'green'
+			g.setLineDash([10])
 		} else {
-			ctx.strokeStyle = 'red'
-			ctx.setLineDash([0]);
+			g.strokeStyle = 'red'
+			g.setLineDash([0])
 		}
-		ctx.lineWidth = 4
+		g.lineWidth = 4
 	}
 	
-	l.line.draw(ctx)
+	l.line.draw(g)
 }
 
 Link.prototype.isOpen = function() {
-	return this.gate != null && this.gate.isOpen();
+	return this.gate != null && this.gate.isOpen()
 }
 
 Link.prototype.checkGate = function() {
@@ -387,11 +432,11 @@ Link.prototype.checkGate = function() {
 	link.nodes.foreach(function(n){
 		if ( n.gate == link.gate )
 			return
-		n.gate = link.gate;
+		n.gate = link.gate
 		n.targets.foreach(function(t){
-			t.handle.gate = link.gate;
-			link.gate.targets.add(t);
-		});
+			t.handle.gate = link.gate
+			link.gate.targets.add(t)
+		})
 		n.links.foreach(function(l){
 			if( l.gate != null && l.gate != link.gate){
 				l.setGate(link.gate)
@@ -415,8 +460,8 @@ Link.prototype.resetGate = function() {
 
 Link.prototype.clearGate = function() {
 	if (gate == null)
-		return;
-	var g = gate;
+		return
+	var g = gate
 	this.gate = null
 	this.nodes.foreach(clearGate)
 	this.nodes.foreach(function(n){
@@ -449,14 +494,14 @@ function drawPortal(t) {
 	var p = t.portal
 	if ( p == null )
 		return
-	var ctx = Game.ctx
+	var g = Game.g
 	
-	ctx.strokeStyle = p.gate.isOpen() ? 'purple' : 'red'
-	ctx.lineWidth = 4
-	ctx.setLineDash([0])
+	g.strokeStyle = p.gate.isOpen() ? 'purple' : 'red'
+	g.lineWidth = 4
+	g.setLineDash([0])
 
 	var r = Game.radius * Math.abs(Math.cos(p.turn))
-	t.point.drawCircle(ctx,r)
+	t.point.drawCircle(g,r)
 
 	p.turn += window.elapsed * Game.pulseSpeed
 	p.turn %= Math.PI * 2
@@ -477,32 +522,50 @@ function drawPlayer(tar) {
 	if ( player == null ) {
 		return
 	}
-	var ctx = Game.ctx
+	var g = Game.g
 	if ( player.level.sel == tar ) {
 		player.turn += window.elapsed * Game.turnSpeed
 		player.turn %= Math.PI * 2
-		ctx.strokeStyle = 'orange'
+		g.strokeStyle = 'orange'
 	} else {
-		ctx.strokeStyle = 'black'
+		g.strokeStyle = 'black'
 	}
-	ctx.lineWidth = 4
-	freePoint.setAngle(2 * player.turn * Math.PI).scale(Game.radius);
-	tar.point.freeA().sum(freePoint);
-	tar.point.freeB().sub(freePoint);
-	freeAPoint.drawLine(ctx, freeBPoint);
-	freePoint.inverse();
-	tar.point.freeA().sum(freePoint);
-	tar.point.freeB().sub(freePoint);
-	freeAPoint.drawLine(ctx, freeBPoint);
+	g.lineWidth = 4
+	g.setLineDash([0])
+	freePoint.setAngle(2 * player.turn * Math.PI).scale(Game.radius)
+	tar.point.freeA().sum(freePoint)
+	tar.point.freeB().sub(freePoint)
+	freeAPoint.drawLine(g, freeBPoint)
+	freePoint.inverse()
+	tar.point.freeA().sum(freePoint)
+	tar.point.freeB().sub(freePoint)
+	freeAPoint.drawLine(g, freeBPoint)
 }
 
 //------------------------------------------------------------
 // KEY.JS
 //------------------------------------------------------------
 
-var Key = function(is) {
+var Key = function(tar,is) {
 	this.isSquare = is
+	this.home = tar
+}
 
+function drawKey(t) {
+	var key = t.key
+	if ( key == null ) {
+		return
+	}
+	var g = Game.g
+	g.lineWidth = 4
+	g.setLineDash([0])
+	g.strokeStyle = 'black'
+
+	if ( key.isSquare ) {
+		t.point.drawSquare(g,15)
+	} else{
+		t.point.drawCircle(g,15)
+	}
 }
 
 //------------------------------------------------------------
@@ -511,16 +574,39 @@ var Key = function(is) {
 
 var Handle = function(targetOrHandle, han, is) {
 	if ( targetOrHandle.links != null ) {
-		this.gate = targetOrHandle.gate
 		this.color = 'green'
+		this.gate = targetOrHandle.gate
 		targetOrHandle.targets.add(han)
 	} else {
 		this.gate = targetOrHandle.portal.gate
 		this.color = 'purple'
 	}
-
+	this.parent = targetOrHandle.point
 	this.gate.targets.add(han)
 	this.isSquare = is
+}
+
+function deleteHandle(t) {
+	
+}
+
+function drawHandle(t) {
+	var h = t.handle
+	if ( h == null ) {
+		return
+	}
+
+	var g = Game.g
+	g.strokeStyle = g.fillStyle = h.gate.isOpen() ? h.color : 'red'
+	g.lineWidth = 4
+	g.setLineDash([1,8])
+	t.point.drawLine(g, h.parent)
+
+	if ( h.isSquare ) {
+		t.point.fillSquare(g,7)
+	} else {
+		t.point.fillCircle(g,7)
+	}	
 }
 
 //------------------------------------------------------------
@@ -528,13 +614,13 @@ var Handle = function(targetOrHandle, han, is) {
 //------------------------------------------------------------
 
 
-var Target = function(lvl,p) {
-	this.point = p
-	this.level = lvl
+var Target = function(lvlOrTar,p) {
 	this.handle = null
 	this.portal = null
-	this.key = null
 	this.player = null
+	this.key = null
+	this.point = p
+	this.level = lvlOrTar
 }
 
 function isActive(t) {
@@ -545,18 +631,12 @@ function isPortalActive(t) {
 	return t.portal != null && t.portal.gate.targets.alltrue(isActive)
 }
 
-function deleteHandle(t) {
-
+function lineCross(a,b) {
+	
 }
 
-function drawHandle(t) {
-
-}
-
-
-
-function drawKey(t) {
-
+Target.prototype.isValidPortal = function() {
+	return this.portal != null && this.portal.isOpen()
 }
 
 Target.prototype.isEmpty = function() {
@@ -577,9 +657,9 @@ Target.prototype.movePlayerFrom = function(target) {
 	}
 
 	if (target.isEmpty())
-		target.lvl.targets.remove(target)
+		target.level.targets.remove(target)
 	if (wasEmpty && !this.isEmpty())
-		this.lvl.targets.add(this)
+		this.level.targets.add(this)
 	return true
 }
 
@@ -593,6 +673,63 @@ Target.prototype.drag = function(a,b) {
 
 
 //------------------------------------------------------------
+// PATH.JS (start, transport, end, isValid, isPortal)
+//------------------------------------------------------------
+
+var Path = function(start,end) {
+	this.isValid = false
+	this.start = start
+	this.end = end
+	this.isPortal = false
+
+	if ( start == end ) {
+		this.isPortal =  start.isValidPortal()
+		this.end = this.isPortal ? start.level.getOtherPortal(start) : start
+	} else if ( start.isValidPortal() && end.isValidPortal() ) {
+		this.isPortal = true
+	} else if ( lineCross(start,end) ) {
+		return
+	}
+
+	this.dist = this.start.point.dist(this.end.point)
+	this.isValid = true
+	this.transport = null
+}
+
+Path.prototype.startPath = function() {
+	if ( this.isPortal ) {
+		this.end.movePlayerFrom(this.start)
+	} else {
+		var lvl = this.start.level
+		var p = new Point().copy(this.start.point)
+		this.transport = new Target(lvl,p)
+	}
+}
+
+Path.prototype.draw = function(g) {
+	g.strokeStyle = 'black'
+	g.setLineDash([10])
+	g.lineWidth = 4
+	if ( this.transport != null ) {
+		drawKey(this.transport)
+		drawPlayer(this.transport)
+		this.transport.point.drawLine(g,this.start.point)
+
+		var d = Game.playerSpeed * window.elapsed
+		var trav = this.transport.point.dist(this.start)
+		if ( trav + d > this.dist ) {
+			this.end.movePlayerFrom(this.transport)
+			this.transport = null
+		} else {
+			this.transport.point.sum(this.transport.point.free().sub(this.start.point).unit(d))
+		}
+
+	} else if ( this.isValid ) {
+		this.start.point.drawLine(g,this.end.point)
+	}
+}
+
+//------------------------------------------------------------
 // LEVEL.JS
 //------------------------------------------------------------
 
@@ -604,8 +741,7 @@ var Level = function(s,i) {
 	this.portals = new List
 	this.targets = new List
 
-	this.sel = null
-	this.target = null
+	this.path = null
 }
 
 Level.prototype.draw = function() {
@@ -613,12 +749,52 @@ Level.prototype.draw = function() {
 	this.targets.foreach(drawPortal)
 	this.targets.foreach(drawKey)
 	this.targets.foreach(drawPlayer)
+	if ( this.path != null )
+		this.path.draw(Game.g)
 	this.links.foreach(drawLink)
 	this.nodes.foreach(drawNode)
 }
 
+Level.prototype.resetLevel = function() {
+	
+}
+
+Level.prototype.getOtherPortal = function(p) {
+	return this.portals.returnif(function(tar){
+		return t.portal != null && t.portal.isOpen() && t != tar
+	})
+}
+
 Level.prototype.getNode = function(p) {
 	return this.nodes.returnif(function(n){return n.point.dist(p) < Game.radius})
+}
+
+Level.prototype.getTarget = function(p) {
+	return this.targets.returnif(function(n){return n.point.dist(p) < Game.radius})
+}
+
+Level.prototype.setTarget = function(p) {
+	var tar = this.getTarget(p)
+
+	if ( this.path == null ) {
+		if ( tar != null ) {
+			this.path = new Path(tar,tar)
+		}
+		return
+	}
+	if ( tar == null )
+		tar = new Target(this,new Point().copy(p))
+	if ( this.path.transport != null )
+		return
+	
+	var path = new Path(this.path.end, tar)
+
+	if ( path.start == path.end ) {
+		this.path = null
+	} else if ( path.isValid ) {
+		this.path = path
+		path.startPath()	
+	}
 }
 
 //------------------------------------------------------------
@@ -627,10 +803,11 @@ Level.prototype.getNode = function(p) {
 
 var Game = {
 	radius: 25,
+	playerSpeed: 0.01,
 	pulseSpeed: 0.002,
-	turnSpeed: 0.002,
+	turnSpeed: 0.001,
 	canvas: null,
- 	ctx: null,
+ 	g: null,
  	now: 0,
  	src: "https://raw.githubusercontent.com/iconium9000/mazeGame/master/mazeGame.txt",
  	lastTime: 0,
@@ -642,10 +819,10 @@ var Game = {
 	mouse: new Point,
 	events: new List().addAll(),
 	textOut: function( startX, startY, shiftX, shiftY, strings ) {
-		Game.ctx.font = '10pt Verdana'
-		Game.ctx.fillStyle = 'black'
+		Game.g.font = '10pt Verdana'
+		Game.g.fillStyle = 'black'
 		for ( var i = 0; i < strings.length; i++) {
-			Game.ctx.fillText( strings[i], startX += shiftX, startY += shiftY );
+			Game.g.fillText( strings[i], startX += shiftX, startY += shiftY )
 		}
 	},
 	readLevels: function(s) {
@@ -660,7 +837,9 @@ var Game = {
 				lvl.nodes.add(new Node(s.readPoint()))
 			}
 			while ( s.readBoolean() ) {
-				lvl.links.add(new Link(lvl.getNode(s.readPoint()),lvl.getNode(s.readPoint()),s.readBoolean()))
+				var a = lvl.getNode(s.readPoint())
+				var b = lvl.getNode(s.readPoint())
+				lvl.links.add(new Link(a,b,s.readBoolean()))
 			}
 			while ( s.readBoolean() ) {
 				// Target
@@ -668,10 +847,7 @@ var Game = {
 				lvl.targets.add(tar)
 
 				if ( s.readBoolean() ) {
-					// Key
-					s.readBoolean()
-
-// 					console.log("\t\tnew Key")
+					tar.key = new Key(tar,s.readBoolean())
 				}
 
 				if ( s.readBoolean() ) {
@@ -685,10 +861,18 @@ var Game = {
 
 				if ( s.readBoolean() ) {
 					// Handle
-					s.readPoint()
-					s.readBoolean()
+					var p = s.readPoint()
+					var n = lvl.getNode(p)
+					var t = lvl.getTarget(p)
 
-// 					console.log("\t\tnew Handle")
+					if ( n != null ) {
+						tar.handle = new Handle(n,tar,s.readBoolean())
+					} else if ( t != null ) {
+						tar.handle = new Handle(t, tar, s.readBoolean())
+					} else {
+						s.readBoolean()
+					}
+
 				}
 			}
 			console.log("Level \t"
@@ -712,55 +896,59 @@ function tick() {
 	window.elapsed = Game.now - Game.lastTime
 	Game.lastTime = Game.now
 	
-	var ctx = Game.ctx
-	ctx.fillStyle = "#ffffff"
-	ctx.fillRect(0, 0, canvas.width, canvas.height);	
-	ctx.lineCap = "round";
-	
-	Game.mouse.drawCircle(ctx,20)
-	
-	ctx.font = '30pt Verdana'
-	ctx.fillStyle = 'black'
+	var g = Game.g
 	var w = canvas.width
 	var h = canvas.height
-	ctx.textAlign="center";
-	ctx.fillText("<",20,h-20)
-	ctx.fillText(">",w-20,h-20)
-	ctx.fillText("Level " + Game.lvl.val.index,w/2,h-20)
 
+	g.fillStyle = 'white'
+	g.lineCap = 'round'
+
+	g.fillRect(0, 0, w, h)	
+	
 	Game.lvl.val.draw()
 
-	window.requestAnimFrame(tick)
-}
-
-function keyPress(e) {
-	var key = String.fromCharCode(e.which)
+	g.fillStyle = 'white'
+	g.beginPath()
+	g.rect(0,h,w,-60)
+	g.closePath()
+	g.fill()
 	
-	switch ( key ) {
-	case ',':	// prevLevel
-		if ( Game.lvl.prev != null ) {
-			Game.lvl = Game.lvl.prev
-		}
-		break
-	case '.':	// nextLevel
-		if ( Game.lvl.next != null ) {
-			Game.lvl = Game.lvl.next
-		}
-		break
-	case 'r':
-		Game.lvl.reset()
-		break
+	g.font = '30pt Verdana'
+	g.fillStyle = 'black'
+	
+	g.textAlign = 'center'
+
+	if ( Game.lvl.prev != null ) {
+		g.fillText("<",20,h-20)	
 	}
+	if ( Game.lvl.next != null ) {
+		g.fillText(">",w-20,h-20)
+	}
+	g.fillText("Level " + Game.lvl.val.index,w/2,h-20)
+
+	window.requestAnimFrame(tick)
 }
 
 function mousePressed(e) {
 	Game.mouseDown = true
 	if ( e.clientY + 50 > Game.canvas.height ) {
-		
+		var x = e.clientX
+		var w = Game.canvas.width / 3
+		if ( x < w ) {
+			if ( Game.lvl.prev != null ) {
+				Game.lvl = Game.lvl.prev
+			}
+		} else if ( x > 2*w ) {
+			if ( Game.lvl.next != null ) {
+				Game.lvl = Game.lvl.next
+			}
+		} else {
+			Game.lvl.val.resetLevel()
+		}
 	} else {
 		Game.mouse.set(e.clientX,e.clientY)
+		Game.lvl.val.setTarget(Game.mouse)
 		Game.mouseDown = true
-		console.log("mousePressed")
 	}
 }
 
@@ -792,34 +980,34 @@ function resize(e) {
 
 function init() {
 	Game.canvas = document.getElementById('canvas')
-	Game.ctx = canvas.getContext("2d")
+	Game.g = canvas.getContext("2d")
 	
 	Game.canvas.width = window.innerWidth
 	Game.canvas.height = window.innerHeight
 
-	Game.canvas.addEventListener("touchstart", mousePressed, false)
+// 	Game.canvas.addEventListener("touchstart", mousePressed, false)
 	Game.canvas.addEventListener("mousedown", mousePressed, false)
-	Game.canvas.addEventListener("touchmove", mouseDragged, false)
+// 	Game.canvas.addEventListener("touchmove", mouseDragged, false)
 	Game.canvas.addEventListener("mousemove", mouseDragged, false)
-	Game.canvas.addEventListener("touchend", mouseReleased, false)
+// 	Game.canvas.addEventListener("touchend", mouseReleased, false)
 	Game.canvas.addEventListener("mouseup", mouseReleased, false)
-	Game.canvas.addEventListener("touchcancel", mouseReleased, false)
+// 	Game.canvas.addEventListener("touchcancel", mouseReleased, false)
 
 	
 	$( window ).resize( resize )
-	$( document ).keypress( keyPress )
+// 	$( document ).keypress( keyPress )
 	
-	var xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP")
-	xmlhttp.onreadystatechange = function () {               
-		if (xmlhttp.readyState == 4) {                   
-			Game.readLevels(new StringIO(xmlhttp.responseText.split("\n")))
+	var x = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP")
+	x.onreadystatechange = function () {               
+		if (x.readyState == 4) {                   
+			Game.readLevels(new StringIO(x.responseText.split("\n")))
 			document.getElementById('loadingMsg').style.visibility = 'hidden'
 			document.getElementById('canvas').style.visibility = 'visible'
 			tick()
 		}  	             
 	}
-	xmlhttp.open("GET", Game.src, true)
-	xmlhttp.send()
+	x.open("GET", Game.src, true)
+	x.send()
 }
 
 window.requestAnimFrame = ( function(){
