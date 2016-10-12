@@ -71,7 +71,9 @@ Point.prototype.unit = function(f) {
 }
 
 Point.prototype.length = function() {
-	return Math.sqrt(this.x*this.x + this.y*this.y)
+	var nx = this.x
+	var ny = this.y
+	return Math.sqrt(nx*nx+ny*ny)
 }
 
 Point.prototype.inverse = function() {
@@ -787,6 +789,8 @@ var Level = function(s,i) {
 
 	this.path = null
 	this.sel = null
+	this.minPoint = new Point().set(1e10,1e10)
+	this.maxPoint = new Point().set(0,0)
 }
 
 Level.prototype.draw = function() {
@@ -798,6 +802,34 @@ Level.prototype.draw = function() {
 		this.path.draw(Game.g)
 	this.links.foreach(drawLink)
 	this.nodes.foreach(drawNode)
+}
+
+Level.prototype.resize = function(w,h) {
+	var min = this.minPoint
+	var max = freeBPoint.copy(this.maxPoint).sub(min)
+	var pad = 30
+	w -= 2 * pad
+	h -= 2 * pad + Game.menuBar
+	var x = w / max.x
+	var scale = function(n) {
+		if ( n == null )
+			return
+		var p = n.point
+		p.sub(min)
+		p.x *= w / max.x
+		p.y *= h / max.y
+		p.x += pad
+		p.y += pad
+ 	}
+	this.nodes.foreach(scale)
+	this.targets.foreach(scale)
+	if ( this.path != null ) {
+		scale(this.path.start)
+		scale(this.path.transport)
+		scale(this.path.end)
+	}
+	min.set(pad,pad)
+	this.maxPoint.set(w+pad,h+pad)
 }
 
 Level.prototype.resetLevel = function() {
@@ -866,6 +898,7 @@ var Game = {
 	pulseSpeed: 0.002,
 	turnSpeed: 0.001,
 	canvas: null,
+	menuBar: 60,
  	g: null,
  	now: 0,
  	src: "https://raw.githubusercontent.com/iconium9000/mazeGame/master/mazeGame.txt",
@@ -893,7 +926,24 @@ var Game = {
 			Game.levels.add(lvl)
 
 			while ( s.readBoolean() ) {
-				lvl.nodes.add(new Node(s.readPoint()))
+				var n = new Node(s.readPoint())
+				lvl.nodes.add(n)
+
+				var min = lvl.minPoint
+				var max = lvl.maxPoint
+				var p = n.point
+				if ( p.x < min.x ) {
+					min.x = p.x
+				}
+				if ( p.x > max.x ) {
+					max.x = p.x
+				}
+				if ( p.y < min.y ) {
+					min.y = p.y
+				}
+				if ( p.y > max.y ) {
+					max.y = p.y
+				}
 			}
 			while ( s.readBoolean() ) {
 				var a = lvl.getNode(s.readPoint())
@@ -934,6 +984,7 @@ var Game = {
 
 				}
 			}
+			lvl.resize(Game.canvas.width,Game.canvas.height)
 			console.log("Level \t"
 				+ lvl.index + "\t"
 				+ lvl.nodes.size() + "\t"
@@ -968,7 +1019,7 @@ function tick() {
 
 	g.fillStyle = Game.backGroundColor
 	g.beginPath()
-	g.rect(0,h,w,-60)
+	g.rect(0,h,w,-Game.menuBar)
 	g.closePath()
 	g.fill()
 	
@@ -1032,8 +1083,10 @@ function mouseReleased(e) {
 }
 
 function resize(e) {
-	Game.canvas.width = window.innerWidth
-	Game.canvas.height = window.innerHeight
+	var w = Game.canvas.width = window.innerWidth
+	var h = Game.canvas.height = window.innerHeight
+	console.log(w + " " + h)
+	Game.levels.foreach(function(l){l.resize(w,h)})
 }
 
 
