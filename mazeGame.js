@@ -858,8 +858,8 @@ Level.prototype.setTarget = function(p) {
 var Game = {
 	wallColor:'white',
 	backGroundColor:'black',
-	doorColor:'#008800',
-	portalColor:'purple',
+	doorColor:'green',
+	portalColor:'#FF00FF',
 	closeColor:'red',
 	radius: 25,
 	playerSpeed: 0.009,
