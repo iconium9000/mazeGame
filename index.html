@@ -3,11 +3,15 @@
 
 <head>
     <style>
+    	div#loadingMsg
+    	{
+    		visibility: visible;
+    	}
         canvas
 		{
             position: absolute;
             border: black 1px solid;
-            visibility: visible;
+            visibility: hidden;
         }
         div#backCanvas
 		{
@@ -51,6 +55,7 @@
 	<noscript>This site requires JavaScript!</noscript>
 </head>
 
+<div id = "loadingMsg">Loading...</div>
 <div id = "backCanvas"><canvas id = "canvas"></canvas></div>
 <body onLoad = "init()">
 

@@ -796,6 +796,8 @@ function init() {
 	xmlhttp.onreadystatechange = function () {               
 		if (xmlhttp.readyState == 4) {                   
 			Game.readLevels(new StringIO(xmlhttp.responseText.split("\n")))
+			document.getElementById('loadingMsg').style.visibility = 'hidden'
+			document.getElementById('canvas').style.visibility = 'visible'
 			tick()
 		}  	             
 	}
