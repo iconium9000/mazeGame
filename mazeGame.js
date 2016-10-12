@@ -716,7 +716,7 @@ Level.prototype.resize = function(w, h) {
     var max = freeBPoint.copy(this.maxPoint).sub(min)
     var pad = 30
     w -= 2 * pad
-    h -= 2 * pad + Game.menuBar
+    h -= 2 * pad + this.radius * 2
     var index = Game.levelResetIndex++
     var swap = (w > h) != (max.x > max.y)
     var scale = function(n) {
@@ -831,7 +831,7 @@ var Game = {
     backGroundColor: 'black',
     doorColor: '#00FF00',
     portalColor: '#FF00FF',
-    closeColor: 'red',
+    closeColor: '#FF3311',
     radius: 24,
     wallWidthFactor:3,
     doorWidthFactor:7,
@@ -842,7 +842,6 @@ var Game = {
     pulseSpeed: 0.002,
     turnSpeed: 0.001,
     canvas: null ,
-    menuBar: 60,
     levelResetIndex: 0,
     g: null ,
     now: 0,
@@ -945,21 +944,23 @@ function tick() {
     g.lineCap = 'round'
     g.fillRect(0, 0, w, h)
     Game.lvl.val.draw()
+    var r = Game.lvl.val.radius
     g.fillStyle = Game.backGroundColor
     g.beginPath()
-    g.rect(0, h, w, -Game.menuBar)
+    g.rect(0, h, w, -1.5 * r)
     g.closePath()
     g.fill()
-    g.font = '30pt Verdana'
+
+    g.font = r + "pt Verdana"
     g.fillStyle = Game.wallColor
     g.textAlign = 'center'
     if (Game.lvl.prev != null ) {
-        g.fillText("<", 20, h - 20)
+        g.fillText("<", r, h - r / 2)
     }
     if (Game.lvl.next != null ) {
-        g.fillText(">", w - 20, h - 20)
+        g.fillText(">", w - r, h - r/2)
     }
-    g.fillText("Level " + Game.lvl.val.index, w / 2, h - 20)
+    g.fillText("Level " + Game.lvl.val.index, w / 2, h - r / 2)
     window.requestAnimFrame(tick)
 }
 function mousePressed(e) {
