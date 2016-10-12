@@ -847,9 +847,8 @@ Level.prototype.setTarget = function(p) {
     else if (tar == null )
         tar = new Target(this,new Point().copy(p))
     else if (tar.player != null ) {
-        if (tar == this.path.end) {
-            this.sel = null
-            this.path = null
+        if (tar == this.sel) {
+            Game.releaseKey = !Game.releaseKey
         } else {
             this.sel = tar
             this.path = new Path(tar,tar)
