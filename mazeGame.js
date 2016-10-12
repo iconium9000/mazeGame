@@ -363,19 +363,20 @@ var Link = function(a, b, d) {
 }
 function drawLink(l) {
     var g = Game.g
+    var r = Game.lvl.val.radius
     if (l.gate == null ) {
         g.strokeStyle = Game.wallColor
-        g.lineWidth = 10
+        g.lineWidth = r / Game.wallWidthFactor
         g.setLineDash([0])
     } else {
         if (l.isOpen()) {
             g.strokeStyle = Game.doorColor
-            g.setLineDash([10])
+            g.setLineDash([r / Game.wallWidthFactor])
         } else {
             g.strokeStyle = Game.closeColor
             g.setLineDash([0])
         }
-        g.lineWidth = 4
+        g.lineWidth = r / Game.doorWidthFactor
     }
     l.line.draw(g)
 }
@@ -534,15 +535,15 @@ function drawHandle(t) {
         return
     }
     var g = Game.g
-    var r = Game.lvl.val.radius / Game.handleRadiusFactor
+    var r = Game.lvl.val.radius
     g.strokeStyle = g.fillStyle = h.gate.isOpen() ? h.color : Game.closeColor
-    g.lineWidth = 4
-    g.setLineDash([1, 8])
+    g.lineWidth = r / Game.doorWidthFactor
+    g.setLineDash([1,1.5 * r / Game.doorWidthFactor])
     t.point.drawLine(g, h.parent)
     if (h.isSquare) {
-        t.point.fillSquare(g, r)
+        t.point.fillSquare(g, r / Game.handleRadiusFactor )
     } else {
-        t.point.fillCircle(g, r)
+        t.point.fillCircle(g, r / Game.handleRadiusFactor)
     }
 }
 //------------------------------------------------------------
@@ -824,6 +825,8 @@ var Game = {
     portalColor: '#FF00FF',
     closeColor: 'red',
     radius: 24,
+    wallWidthFactor:3,
+    doorWidthFactor:7,
     handleRadiusFactor:5,
     nodeRadiusFactor:2.5,
     keyRadiusFactor:2,
