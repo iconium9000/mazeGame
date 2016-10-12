@@ -708,27 +708,26 @@ var Game = {
 //------------------------------------------------------------
 
 function tick() {
-	
-
 	Game.now = (new Date()).getTime()
 	window.elapsed = Game.now - Game.lastTime
 	Game.lastTime = Game.now
 	
-	Game.ctx.fillStyle = "#ffffff"
-	Game.ctx.fillRect(0, 0, canvas.width, canvas.height);	
-	Game.ctx.lineCap = "round";
-
-
-// 	Game.ctx.setLineDash([1, 3]);
+	var ctx = Game.ctx
+	ctx.fillStyle = "#ffffff"
+	ctx.fillRect(0, 0, canvas.width, canvas.height);	
+	ctx.lineCap = "round";
 	
-	Game.mouse.drawCircle(Game.ctx,20)
-
-	Game.textOut( 10, canvas.height, 0, -15, [
-		"fps:" + Math.round(1000/window.elapsed),
-		"Canvas Size: " + canvas.width + " " + canvas.height,
-		"Level Number: " + Game.lvl.val.index
-	])
+	Game.mouse.drawCircle(ctx,20)
 	
+	ctx.font = '30pt Verdana'
+	ctx.fillStyle = 'black'
+	var w = canvas.width
+	var h = canvas.height
+	ctx.textAlign="center";
+	ctx.fillText("<",20,h-20)
+	ctx.fillText(">",w-20,h-20)
+	ctx.fillText("Level " + Game.lvl.val.index,w/2,h-20)
+
 	Game.lvl.val.draw()
 
 	window.requestAnimFrame(tick)
@@ -752,23 +751,37 @@ function keyPress(e) {
 		Game.lvl.reset()
 		break
 	}
-
-}
-
-function mouseMoved(e) {
-	Game.mouse.set(e.clientX,e.clientY)
 }
 
 function mousePressed(e) {
-	Game.mouse.set(e.clientX,e.clientY)
 	Game.mouseDown = true
-	console.log("mousePressed")
+	if ( e.clientY + 50 > Game.canvas.height ) {
+		
+	} else {
+		Game.mouse.set(e.clientX,e.clientY)
+		Game.mouseDown = true
+		console.log("mousePressed")
+	}
+}
+
+function mouseDragged(e) {
+	if ( e.clientY + 50 > Game.canvas.height ) {
+		return
+	} 
+
+	var f = Game.mouse.freeA()
+	var n = Game.mouse.set(e.clientX,e.clientY)
+	
+	if ( Game.mouseDown && f.x != null && f.y != null ) {
+		f.sub(n)
+		var l = Game.lvl.val
+		l.nodes.foreach(function(n){n.point.sub(f)})
+		l.targets.foreach(function(t){t.point.sub(f)})
+	}
 }
 
 function mouseReleased(e) {
-	Game.mouse.set(e.clientX,e.clientY)
-	Game.mouseReleased = false
-	console.log("mouseReleased")
+	Game.mouseDown = false
 }
 
 function resize(e) {
@@ -784,13 +797,16 @@ function init() {
 	Game.canvas.width = window.innerWidth
 	Game.canvas.height = window.innerHeight
 
-	$(document).mousemove( mouseMoved )
-	$(document).mousedown( mousePressed )
-	$(document).mouseup( mouseReleased )
+	Game.canvas.addEventListener("touchstart", mousePressed, false)
+	Game.canvas.addEventListener("mousedown", mousePressed, false)
+	Game.canvas.addEventListener("touchmove", mouseDragged, false)
+	Game.canvas.addEventListener("mousemove", mouseDragged, false)
+	Game.canvas.addEventListener("touchend", mouseReleased, false)
+	Game.canvas.addEventListener("mouseup", mouseReleased, false)
+
+	
 	$( window ).resize( resize )
 	$( document ).keypress( keyPress )
-
-	$(canvas).css('cursor', 'none')
 	
 	var xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP")
 	xmlhttp.onreadystatechange = function () {               
