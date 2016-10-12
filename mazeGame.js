@@ -650,8 +650,8 @@ var Path = function(start, end) {
             }
         } else {
             var tar = this.start.level.getNearestActivePortal(start)
-            if ( tar != null ) {
-                this.end = tar
+            if ( tar != null && !lineCross(start.level.getOtherPortal(tar),end) ) {
+                 this.end = tar
             } else {
                 return
             }
@@ -726,12 +726,22 @@ var Level = function(s, i) {
     this.maxPoint = new Point().set(0, 0)
 }
 Level.prototype.draw = function() {
+    var g = Game.g
     this.targets.foreach(drawHandle)
     this.targets.foreach(drawPortal)
     this.targets.foreach(drawKey)
     this.targets.foreach(drawPlayer)
     if (this.path != null )
         this.path.draw(Game.g)
+    if (this.sel != null && this.sel.key != null && !Game.releaseKey) {
+        g.fillStyle = Game.backGroundColor
+        if ( this.sel.key.isSquare) {
+            this.sel.point.fillSquare(g,this.radius / Game.nodeRadiusFactor)
+        } else {
+            this.sel.point.fillCircle(g,this.radius / Game.nodeRadiusFactor)
+        }
+        
+    }
     this.links.foreach(drawLink)
     this.nodes.foreach(drawNode)
 }
