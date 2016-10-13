@@ -68,6 +68,9 @@ Point.prototype.length = function() {
     var ny = this.y
     return Math.sqrt(nx * nx + ny * ny)
 }
+Point.prototype.equals = function(p) {
+    return this.x == p.x && this.y == p.y
+}
 Point.prototype.inverse = function() {
     var temp = this.x
     this.x = this.y
@@ -835,7 +838,7 @@ Level.prototype.getNearestActivePortal = function(t) {
 Level.prototype.getNode = function(p) {
     var r = this.radius
     return this.nodes.returnif(function(n) {
-        return n.point.dist(p) < r
+        return n.point.equals(p)
     })
 }
 Level.prototype.getTarget = function(p) {
