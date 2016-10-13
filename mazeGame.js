@@ -452,9 +452,10 @@ function drawPortal(t) {
     var p = t.portal
     if (p == null )
         return
+    var r = Game.lvl.val.radius
     var g = Game.g
     g.strokeStyle = p.gate.isOpen() ? Game.portalColor : Game.closeColor
-    g.lineWidth = 4
+    g.lineWidth = r / Game.doorWidthFactor
     g.setLineDash([])
     var r = t.level.radius * Math.abs(Math.cos(p.turn))
     t.point.drawCircle(g, r)
@@ -770,7 +771,7 @@ Level.prototype.draw = function() {
 Level.prototype.resize = function(w, h) {
     var min = this.minPoint
     var max = freeBPoint.copy(this.maxPoint).sub(min)
-    var pad = 30
+    var pad = this.pad
     w -= 2 * pad
     h -= 2 * pad + Game.menuBar
     var index = Game.levelResetIndex++
@@ -889,6 +890,7 @@ var Game = {
     portalColor: '#FF00FF',
     closeColor: '#FF3311',
     radius: 24,
+    padFactor: 2e4,
     wallWidthFactor: 3,
     doorWidthFactor: 7,
     handleRadiusFactor: 5,
@@ -980,8 +982,9 @@ var Game = {
                 }
             }
             lvl.startSize = lvl.maxPoint.length()
+            lvl.pad = Game.padFactor / lvl.startSize
             lvl.resize(Game.canvas.width, Game.canvas.height)
-            console.log("Level \t" + lvl.index + "\t" + lvl.nodes.size() + "\t" + lvl.links.size() + "\t" + lvl.targets.size() + "\t" + lvl.score + "\t")
+            console.log("Level \t" + lvl.index + "\t" + lvl.nodes.size() + "\t" + lvl.links.size() + "\t" + lvl.targets.size() + "\t" + lvl.score + "\t" + lvl.pad + "\t" + lvl.radius)
         }
         Game.lvl = Game.levels.head
     }
