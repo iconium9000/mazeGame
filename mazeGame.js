@@ -1037,7 +1037,7 @@ function mousePressed(e) {
     }
 }
 function mouseDragged(e) {
-    if (e.clientY + 2 * Game.menuBar > Game.canvas.height) {
+    if (e.clientY + Game.menuBar > Game.canvas.height) {
         return
     }
     var f = Game.mouse.freeA()
