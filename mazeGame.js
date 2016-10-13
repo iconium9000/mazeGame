@@ -322,7 +322,6 @@ function drawNode(n) {
     }
     var g = Game.g
     var r = Game.lvl.val.radius / Game.nodeRadiusFactor
-
     if (n.gate == null ) {
         g.fillStyle = Game.wallColor
     } else {
@@ -539,10 +538,10 @@ function drawHandle(t) {
     var r = Game.lvl.val.radius
     g.strokeStyle = g.fillStyle = h.gate.isOpen() ? h.color : Game.closeColor
     g.lineWidth = r / Game.doorWidthFactor
-    g.setLineDash([1,1.5 * r / Game.doorWidthFactor])
+    g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
     t.point.drawLine(g, h.parent)
     if (h.isSquare) {
-        t.point.fillSquare(g, r / Game.handleRadiusFactor )
+        t.point.fillSquare(g, r / Game.handleRadiusFactor)
     } else {
         t.point.fillCircle(g, r / Game.handleRadiusFactor)
     }
@@ -567,18 +566,21 @@ function isPortalActive(t) {
     return t.portal != null && t.portal.gate.targets.alltrue(isActive)
 }
 function lineCross(a, b) {
+    if (a == b) {
+        return false
+    }
     var pa = a.point
     var pb = b.point
     var lvl = a.level
     return lvl.links.findif(function(l) {
-        if ( !l.line.lineCross(pa, pb) )
+        if (!l.line.lineCross(pa, pb))
             return false
         if (l.gate == null || !l.gate.isOpen()) {
             return true
-        } else if ( a.handle == null ) {
+        } else if (a.handle == null ) {
             return false
-        } else if ( a.handle.gate == l.gate ) {
-            if ( a.key == null ) {
+        } else if (a.handle.gate == l.gate) {
+            if (a.key == null ) {
                 return true
             } else {
                 Game.releaseKey = true
@@ -587,7 +589,6 @@ function lineCross(a, b) {
         } else {
             return false
         }
-         
     })
 }
 Target.prototype.isValidPortal = function() {
@@ -630,6 +631,7 @@ var Path = function(start, end) {
     this.isValid = false
     this.start = start
     this.end = end
+    this.next = null
     this.isPortal = false
     var lvl = this.start.level
     if (start.player != null && end.player != null ) {
@@ -640,18 +642,25 @@ var Path = function(start, end) {
     } else if (start.isValidPortal() && end.isValidPortal()) {
         this.isPortal = true
     } else if (lineCross(start, end)) {
-        if ( start.isValidPortal() ) {
+        if (start.isValidPortal()) {
             var tar = start.level.getOtherPortal(start)
-            if ( lineCross(end,tar) ) {
+            if (lineCross(end, tar)) {
                 return
             } else {
                 this.isPortal = true
-                this.end = tar    
+                this.end = tar
             }
         } else {
             var tar = this.start.level.getNearestActivePortal(start)
-            if ( tar != null && !lineCross(start.level.getOtherPortal(tar),end) ) {
-                 this.end = tar
+            if (tar != null ) {
+                if (end.isValidPortal()) {
+                    this.end = tar
+                } else if (lineCross(start.level.getOtherPortal(tar), end)) {
+                    return
+                } else {
+                    this.end = tar
+                    this.next = end
+                }
             } else {
                 return
             }
@@ -661,7 +670,7 @@ var Path = function(start, end) {
     this.transport = null
 }
 Path.prototype.startPath = function() {
-    if ( this.isValid ) {
+    if (this.isValid) {
         if (this.start.key != null && !Game.releaseKey) {
             if (this.end.key != null )
                 Game.releaseKey = true;
@@ -691,7 +700,7 @@ Path.prototype.draw = function(g) {
             Game.releaseKey = r
             if (!this.isPortal && this.end.isValidPortal()) {
                 var po = this.end.level.getOtherPortal(this.end)
-                if ( po.player != null ) {
+                if (po.player != null ) {
                     this.transport = null
                     return
                 }
@@ -699,14 +708,20 @@ Path.prototype.draw = function(g) {
                 this.end = po
                 this.isPortal = true
                 this.startPath()
+            } else if (this.next != null && !lineCross(this.end, this.next)) {
+                this.start = this.end
+                this.end = this.next
+                this.isPortal = false
+                this.next = null
+                this.startPath()
             } else {
+                this.next = null
                 this.transport = null
             }
         } else {
             this.transport.point.sum(this.end.point.free().sub(this.start.point).unit(d))
         }
-    } else if (this.isValid) {// 		this.start.point.drawLine(g,this.end.point)
-    }
+    } else if (this.isValid) {}
 }
 //------------------------------------------------------------
 // LEVEL.JS
@@ -735,12 +750,11 @@ Level.prototype.draw = function() {
         this.path.draw(Game.g)
     if (this.sel != null && this.sel.key != null && !Game.releaseKey) {
         g.fillStyle = Game.backGroundColor
-        if ( this.sel.key.isSquare) {
-            this.sel.point.fillSquare(g,this.radius / Game.nodeRadiusFactor)
+        if (this.sel.key.isSquare) {
+            this.sel.point.fillSquare(g, this.radius / Game.nodeRadiusFactor)
         } else {
-            this.sel.point.fillCircle(g,this.radius / Game.nodeRadiusFactor)
+            this.sel.point.fillCircle(g, this.radius / Game.nodeRadiusFactor)
         }
-        
     }
     this.links.foreach(drawLink)
     this.nodes.foreach(drawNode)
@@ -757,16 +771,13 @@ Level.prototype.resize = function(w, h) {
         if (n == null || n.index == index)
             return
         var p = n.point
-
         p.x -= min.x
         p.y -= min.y
-
-        if ( swap ) {
+        if (swap) {
             var x = p.x
             p.x = p.y * max.x / max.y
             p.y = x * max.y / max.x
         }
-
         p.x = p.x * w / max.x + pad
         p.y = p.y * h / max.y + pad
         n.index = index
@@ -813,10 +824,9 @@ Level.prototype.getOtherPortal = function(t) {
 }
 Level.prototype.getNearestActivePortal = function(t) {
     return this.portals.returnif(function(tar) {
-        return tar.portal != null && tar.portal.gate.isOpen() && !lineCross(t,tar)
+        return tar.portal != null && tar.portal.gate.isOpen() && !lineCross(t, tar)
     })
 }
-
 Level.prototype.getNode = function(p) {
     var r = this.radius
     return this.nodes.returnif(function(n) {
@@ -831,17 +841,16 @@ Level.prototype.getTarget = function(p) {
 }
 Level.prototype.setTarget = function(p) {
     var tar = this.getTarget(p)
-    if (this.sel == null) {
+    if (this.sel == null ) {
         if (tar != null && tar.player != null ) {
             this.sel = tar
             this.path = new Path(tar,tar)
         }
         return
     }
-    if ( this.sel == null ) {
+    if (this.sel == null ) {
         return
     }
-
     if (this.path != null && this.path.transport != null )
         return
     else if (tar == null )
@@ -872,11 +881,11 @@ var Game = {
     portalColor: '#FF00FF',
     closeColor: '#FF3311',
     radius: 24,
-    wallWidthFactor:3,
-    doorWidthFactor:7,
-    handleRadiusFactor:5,
-    nodeRadiusFactor:2.5,
-    keyRadiusFactor:2,
+    wallWidthFactor: 3,
+    doorWidthFactor: 7,
+    handleRadiusFactor: 5,
+    nodeRadiusFactor: 2.5,
+    keyRadiusFactor: 2,
     playerSpeed: 0.009,
     pulseSpeed: 0.002,
     turnSpeed: 0.001,
@@ -965,7 +974,6 @@ var Game = {
             lvl.startSize = lvl.maxPoint.length()
             lvl.resize(Game.canvas.width, Game.canvas.height)
             console.log("Level \t" + lvl.index + "\t" + lvl.nodes.size() + "\t" + lvl.links.size() + "\t" + lvl.targets.size() + "\t" + lvl.score + "\t")
-
         }
         Game.lvl = Game.levels.head
     }
@@ -1030,10 +1038,7 @@ function mouseDragged(e) {
     var f = Game.mouse.freeA()
     var n = Game.mouse.set(e.clientX, e.clientY)
     var lvl = Game.lvl.val
-    if ( lvl.path == null || lvl.path.transport == null ) {
-
-    }
-    
+    if (lvl.path == null || lvl.path.transport == null ) {}
 }
 function mouseReleased(e) {
     Game.mouseDown = false
