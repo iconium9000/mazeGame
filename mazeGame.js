@@ -2,7 +2,6 @@
 // Copyright (c) 2016 John J FitzGerald
 // No authorized copying or modification.
 //------------------------------------------------------------
-
 //------------------------------------------------------------
 // POINT.JS
 //------------------------------------------------------------
@@ -770,26 +769,28 @@ Level.prototype.draw = function() {
 }
 Level.prototype.resize = function(w, h) {
     var min = this.minPoint
-    var max = freeBPoint.copy(this.maxPoint).sub(min)
+    var max = this.maxPoint
     var pad = this.pad
-    w -= 2 * pad
-    h -= 2 * pad + Game.menuBar
+    var x = w / 15
+    var y = h / 15
+    w -= x
+    h -= y * 2
     var index = Game.levelResetIndex++
     var swap = (w > h) != (max.x > max.y)
     var scale = function(n) {
         if (n == null || n.index == index)
             return
         var p = n.point
-        p.x -= min.x
-        p.y -= min.y
-        if (swap) {
-            var x = p.x
-            p.x = p.y * max.x / max.y
-            p.y = x * max.y / max.x
-        }
-        p.x = p.x * w / max.x + pad
-        p.y = p.y * h / max.y + pad
         n.index = index
+        p.x = (p.x - min.x) / (max.x - min.x)
+        p.y = (p.y - min.y) / (max.y - min.y)
+        if (swap) {
+            var u = p.x
+            p.x = p.y
+            p.y = u
+        }
+        p.x = p.x * (w - x) + x
+        p.y = p.y * (h - y) + y
     }
     this.nodes.foreach(scale)
     this.targets.foreach(scale)
@@ -797,8 +798,8 @@ Level.prototype.resize = function(w, h) {
     if (this.path != null ) {
         scale(this.path.transport)
     }
-    min.set(pad, pad)
-    this.maxPoint.set(w + pad, h + pad)
+    min.set(x, y)
+    max.set(w, h)
     this.radius = Game.radius * this.maxPoint.length() / this.startSize
 }
 Level.prototype.resetLevel = function() {
@@ -1003,21 +1004,22 @@ function tick() {
     g.lineCap = 'round'
     g.fillRect(0, 0, w, h)
     Game.lvl.val.draw()
-    g.fillStyle = Game.backGroundColor
-    g.beginPath()
-    g.rect(0, h, w, -Game.menuBar)
-    g.closePath()
-    g.fill()
-    g.font = '30pt Verdana'
+    var min = Game.lvl.val.minPoint
+    var max = Game.lvl.val.maxPoint
+    var r = max.y + min.y * 1.5
+
+    g.font = min.y / 2 + 'pt Verdana'
     g.fillStyle = Game.wallColor
     g.textAlign = 'center'
+    
+
     if (Game.lvl.prev != null ) {
-        g.fillText("<", 20, h - 20)
+        g.fillText("<", min.x, r)
     }
     if (Game.lvl.next != null ) {
-        g.fillText(">", w - 20, h - 20)
+        g.fillText(">", max.x, r)
     }
-    g.fillText("Level " + Game.lvl.val.index, w / 2, h - 20)
+    g.fillText("Level " + Game.lvl.val.index, w / 2, r)
     window.requestAnimFrame(tick)
 }
 function mousePressed(e) {
