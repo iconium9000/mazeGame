@@ -5,6 +5,8 @@
 			background: black;
 		}
 		dif#startButton {
+			color: white;
+    		visibility: visible;
 			text-align: center;
 		}
     	div#loadingMsg {
@@ -76,7 +78,7 @@
 </head>
 
 <div id = "loadingMsg">
-<h>Welcome to the most depressing game ever made!</h>
+<h><b>Welcome to the most depressing game ever made!</b></h>
 <ul>
 <li>Your mission, should you choose to accept it, is to try to escape the prison you are trapped in. You must open a door you can never go through. How tragic :(
 <li>To move, first tap on a <span class="player">Helicopter</span>  to focus on it, then tap anywhere that has a clear line of sight to the selected <span class="player">Helicopter</span>.
@@ -88,11 +90,11 @@
 <li><span class="portal">Portals</span> are the pulsing circles. Open portals are purple, closed portals are red.
 <li><span class="portal">Portals</span> are only open if and only if exactly two <span class="portal">Portals</span> are fully powered by their connected <span class="handle">Handles</span>.
 </ul>
+<h><b><button onpress="init()">Play Game!</button></b></h>
 </div>
 <div id = "backCanvas"><canvas id = "canvas">
 Your browser does not support canvas element.
 </canvas></div>
-<div id=startButton><button onclick="init()">Play Game!</button></div>
 
 </body>
 
