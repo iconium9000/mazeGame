@@ -1080,19 +1080,16 @@ function init() {
     // 	$( document ).keypress( keyPress )
     var x = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP")
     x.onreadystatechange = function() {
-       alert("reading file... ")
-if (x.readyState == 4) {
+        if (x.readyState == 4) {
             Game.readLevels(new StringIO(x.responseText.split("\n")))
             document.getElementById('loadingMsg').style.visibility = 'hidden'
             document.getElementById('canvas').style.visibility = 'visible'
             tick()
-        } else {
-            alert("failed") 
- 
+        }
     }
     x.open("GET", Game.src, true)
     x.send()
-}
+} 
 window.requestAnimFrame = (function() {
     return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback) {
         window.setTimeout(callback, 30)
