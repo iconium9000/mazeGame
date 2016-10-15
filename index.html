@@ -1,24 +1,23 @@
 <!DOCTYPE html>
-
 <head>
-    <style>
-  		body
-		{
+    <style type="text/css">
+  		body {
 			background: black;
 		}
-    	div#loadingMsg
-    	{
+		dif#startButton {
+			text-align: center;
+		}
+    	div#loadingMsg {
+    		color: white;
     		visibility: visible;
     	}
-        canvas
-		{
+        canvas {
             position: absolute;
             background: black
             border: black 1px solid;
             visibility: hidden;
         }
-        div#backCanvas
-		{
+        div#backCanvas {
             position: absolute;
 			z-index: 0;
             top: 0px;
@@ -35,8 +34,25 @@
             top: 0px; left: 0px;
 			width: 100%; height: 100%;
 		}
-		div#box
-		{
+		li {
+
+    	}
+    	.portal {
+    		color: purple
+    	}
+    	.door {
+    		color: green
+    	}
+    	.handle {
+    		color: red
+    	}
+    	.key {
+    		color: yellow
+    	}
+    	.player {
+    		color: orange
+    	}
+		div#box {
             display: none;
             position: absolute;
             z-index: 2;
@@ -59,12 +75,24 @@
 	<noscript>This site requires JavaScript!</noscript>
 </head>
 
-<div id = "loadingMsg">Loading...</div>
+<div id = "loadingMsg">
+<h>Welcome to the most depressing game ever made!</h>
+<ul>
+<li>Your mission, should you choose to accept it, is to try to escape the prison you are trapped in. You must open a door you can never go through. How tragic :(
+<li>To move, first tap on a <span class="player">Helicopter</span>  to focus on it, then tap anywhere that has a clear line of sight to the selected <span class="player">Helicopter</span>.
+<li>The currently selected <span class="player">Helicopter</span> is the only orange spinning <span class="player">Helicopter</span>.
+<li><span class="handle">Handles</span> are the little squares or circles connected by dotted lines to the knobs on <span class="door">Doors</span> or <span class="portal">Portals</span>.
+<li><span class="key">Keys</span> are hollow circles or squres that can be picked up by <span class="player">Helicopters</span> in and are used to power doors and portals.
+<li><span class="door">Doors</span> and <span class="portal">Portals</span> only open if and only if all the <span class="handle">Handles</span> connected to them have either a <span class="key">Key</span> or a <span class="player">Helicopter</span> to power it.
+<li>A circular <span class="key">Key</span> cannot power a square <span class="handle">Handle</span>, and a square <span class="key">Key</span> cannot power a circular <span class="handle">Handle</span>.
+<li><span class="portal">Portals</span> are the pulsing circles. Open portals are purple, closed portals are red.
+<li><span class="portal">Portals</span> are only open if and only if exactly two <span class="portal">Portals</span> are fully powered by their connected <span class="handle">Handles</span>.
+</ul>
+</div>
 <div id = "backCanvas"><canvas id = "canvas">
 Your browser does not support canvas element.
 </canvas></div>
-<body onLoad = "init()" background='black'>
-
+<div id=startButton><button onclick="init()">Play Game!</button></div>
 
 </body>
 
