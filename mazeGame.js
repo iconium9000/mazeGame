@@ -657,6 +657,7 @@ var Path = function(start, end) {
             } else {
                 this.isPortal = true
                 this.end = tar
+                this.next = end
             }
         } else {
             var tar = this.start.level.getNearestActivePortal(start)
@@ -678,7 +679,7 @@ var Path = function(start, end) {
     this.transport = null
 }
 Path.prototype.startPath = function() {
-    if (this.isValid) {
+    if (this.isValid && this.end.player == null) {
         if (this.start.key != null && !Game.releaseKey) {
             if (this.end.key != null )
                 Game.releaseKey = true;
@@ -854,7 +855,6 @@ Level.prototype.setTarget = function(p) {
     if (this.sel == null ) {
         if (tar != null && tar.player != null ) {
             this.sel = tar
-            this.path = new Path(tar,tar)
         }
         return
     }
@@ -875,11 +875,8 @@ Level.prototype.setTarget = function(p) {
         }
         return
     }
-    var path = new Path(this.sel,tar)
-    if (path.isValid) {
-        this.path = path
-        path.startPath()
-    }
+    this.path = new Path(this.sel,tar)  
+    this.path.startPath()
 }
 //------------------------------------------------------------
 // WINDOW.JS
@@ -1011,7 +1008,6 @@ function tick() {
     g.font = min.y / 2 + 'pt Verdana'
     g.fillStyle = Game.wallColor
     g.textAlign = 'center'
-    
 
     if (Game.lvl.prev != null ) {
         g.fillText("<", min.x, r)
