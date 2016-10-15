@@ -1064,6 +1064,7 @@ function resize(e) {
     })
 }
 function init() {
+    alert("Init") 
     Game.canvas = document.getElementById('canvas')
     Game.g = canvas.getContext("2d")
     Game.canvas.width = window.innerWidth
