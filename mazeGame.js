@@ -1024,7 +1024,7 @@ function tick() {
 }
 function mousePressed(e) {
     Game.mouseDown = true
-    if (e.clientY + 2 * Game.menuBar > Game.canvas.height) {
+    if (e.clientY + 2 * Game.lvl.val.minPoint.y > Game.canvas.height) {
         var x = e.clientX
         var w = Game.canvas.width / 3
         if (x < w) {
