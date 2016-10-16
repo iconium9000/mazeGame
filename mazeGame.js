@@ -769,6 +769,7 @@ Level.prototype.draw = function() {
     this.nodes.foreach(drawNode)
 }
 Level.prototype.resize = function(w, h) {
+    var lvl = this
     var min = this.minPoint
     var max = this.maxPoint
     var pad = this.pad
@@ -799,9 +800,24 @@ Level.prototype.resize = function(w, h) {
     if (this.path != null ) {
         scale(this.path.transport)
     }
+
     min.set(x, y)
     max.set(w, h)
     this.radius = Game.radius * this.maxPoint.length() / this.startSize
+
+    this.targets.foreach(function(tar) {
+        var han = tar.handle
+        if ( han != null || tar.portal != null ) {
+            var node = lvl.getNearestNode(tar.point)
+            var src
+            if ( han == null || tar.point.dist(node.point) < han.parent.dist(tar.point) ) {
+                src = node.point
+            } else {
+                src = han.parent
+            }
+            tar.point.sub(src).scale( lvl.radius / tar.point.length() ).sum(src)
+        }
+    })
 }
 Level.prototype.resetLevel = function() {
     if (this.path != null && this.path.transport != null ) {
@@ -838,11 +854,23 @@ Level.prototype.getNearestActivePortal = function(t) {
         return tar.portal != null && tar.portal.gate.isOpen() && !lineCross(t, tar)
     })
 }
-Level.prototype.getNode = function(p) {
+Level.prototype.getNodeAt = function(p) {
     var r = this.radius
     return this.nodes.returnif(function(n) {
         return n.point.equals(p)
     })
+}
+Level.prototype.getNearestNode = function(p) {
+    var r = 1e10
+    var node = null
+    this.nodes.foreach(function(n) {
+        var d = n.point.dist(p)
+        if ( d < r ) {
+            node = n
+            r = d
+        }
+    })
+    return node
 }
 Level.prototype.getTarget = function(p) {
     var r = this.radius
@@ -891,7 +919,7 @@ var Game = {
     padFactor: 2e4,
     wallWidthFactor: 3,
     doorWidthFactor: 7,
-    handleRadiusFactor: 5,
+    handleRadiusFactor: 4,
     nodeRadiusFactor: 2.5,
     keyRadiusFactor: 2,
     playerSpeed: 0.009,
@@ -944,8 +972,8 @@ var Game = {
                 }
             }
             while (s.readBoolean()) {
-                var a = lvl.getNode(s.readPoint())
-                var b = lvl.getNode(s.readPoint())
+                var a = lvl.getNodeAt(s.readPoint())
+                var b = lvl.getNodeAt(s.readPoint())
                 lvl.links.add(new Link(a,b,s.readBoolean()))
             }
             while (s.readBoolean()) {
@@ -968,7 +996,7 @@ var Game = {
                 if (s.readBoolean()) {
                     // Handle
                     var p = s.readPoint()
-                    var n = lvl.getNode(p)
+                    var n = lvl.getNodeAt(p)
                     var t = lvl.getTarget(p)
                     if (n != null ) {
                         tar.handle = new Handle(n,tar,s.readBoolean())
