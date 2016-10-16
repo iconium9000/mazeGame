@@ -712,7 +712,7 @@ Path.prototype.draw = function(g) {
 
         var trav = this.transport.point.dist(this.start.point)
         var d = Game.playerSpeed * window.elapsed * this.dist
-        
+
         if (trav + d > this.dist) {
             var onNode = lvl.getNearestNode(this.end.point).point.dist(this.end.point) < lvl.radius / Game.nodeRadiusFactor
             if (!this.links.isEmpty() || ( this.transport.key && this.end.key ) || onNode) {
@@ -1017,6 +1017,8 @@ var Game = {
             while (s.readBoolean()) {
                 // Target
                 var tar = new Target(lvl,s.readPoint())
+                tar.isAnchor = s.readBoolean()
+                
                 lvl.targets.add(tar)
                 if (s.readBoolean()) {
                     tar.key = new Key(tar,s.readBoolean())
