@@ -319,6 +319,12 @@ var StringIO = function(a) {
     this.array = a
     this.index = 0
 }
+StringIO.prototype.readString = function() {
+    var s = this.array[this.index]
+    // 	console.log("readInteger " + s + " " + i)
+    this.index++
+    return s
+}
 StringIO.prototype.readInteger = function() {
     var s = this.array[this.index]
     var i = parseInt(s)
@@ -769,7 +775,8 @@ Path.prototype.draw = function(g) {
 //------------------------------------------------------------
 // LEVEL.JS
 //------------------------------------------------------------
-var Level = function(s, i) {
+var Level = function(n, s, i) {
+    this.name = n
     this.score = s
     this.index = i
     this.radius = 28
@@ -988,7 +995,7 @@ var Game = {
         var index = 0
         while (s.readBoolean()) {
             // Level
-            var lvl = new Level(s.readInteger(),++index)
+            var lvl = new Level(s.readString(),s.readInteger(),++index)
             Game.levels.add(lvl)
             while (s.readBoolean()) {
                 var n = new Node(s.readPoint())
