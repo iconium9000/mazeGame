@@ -321,28 +321,28 @@ var StringIO = function(a) {
 }
 StringIO.prototype.readString = function() {
     var s = this.array[this.index]
-    // 	console.log("readInteger " + s + " " + i)
+//     console.log("readString " + s)
     this.index++
     return s
 }
 StringIO.prototype.readInteger = function() {
     var s = this.array[this.index]
     var i = parseInt(s)
-    // 	console.log("readInteger " + s + " " + i)
+//     console.log("readInteger " + s + " " + i)
     this.index++
     return i
 }
 StringIO.prototype.readFloat = function() {
     var s = this.array[this.index]
     var i = parseFloat(s)
-    // 	console.log("readFloat " + s + " " + i)
+//     console.log("readFloat " + s + " " + i)
     this.index++
     return i
 }
 StringIO.prototype.readBoolean = function() {
     var s = this.array[this.index]
     var i = s == "true"
-    // 	console.log("readBoolean " + s + " " + i + " ")
+//     console.log("readBoolean " + s + " " + i + " ")
     this.index++
     return i
 }
@@ -1057,7 +1057,7 @@ var Game = {
             lvl.startSize = lvl.maxPoint.length()
             lvl.pad = Game.padFactor / lvl.startSize
             lvl.resize(Game.canvas.width, Game.canvas.height)
-            console.log("Level \t" + lvl.index + "\t" + lvl.nodes.size() + "\t" + lvl.links.size() + "\t" + lvl.targets.size() + "\t" + lvl.score + "\t" + lvl.pad + "\t" + lvl.radius)
+            console.log(lvl.name + "\t" + lvl.nodes.size() + "\t" + lvl.links.size() + "\t" + lvl.targets.size() + "\t" + lvl.score + "\t" + lvl.pad + "\t" + lvl.radius)
         }
         Game.lvl = Game.levels.head
     }
@@ -1079,7 +1079,7 @@ function tick() {
     var min = Game.lvl.val.minPoint
     var max = Game.lvl.val.maxPoint
     var r = max.y + min.y * 1.5
-    g.font = min.y / 2 + 'pt Verdana'
+    g.font = parseInt(min.y / 2) + 'pt Verdana'
     g.fillStyle = Game.wallColor
     g.textAlign = 'center'
     if (Game.lvl.prev ) {
@@ -1088,7 +1088,14 @@ function tick() {
     if (Game.lvl.next ) {
         g.fillText(">", max.x, r)
     }
-    g.fillText("Level " + Game.lvl.val.index, w / 2, r)
+    var name = Game.lvl.val.name
+    if ( name.length < 18 ) {
+        g.fillText(name, w / 2, r)
+    } else {
+        g.font = parseInt(min.y / 3) + 'pt Verdana'
+        g.fillText(name, w / 2, r - min.y / 32)
+    }
+        
     window.requestAnimFrame(tick)
 }
 function mousePressed(e) {
