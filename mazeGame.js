@@ -830,7 +830,7 @@ Level.prototype.resize = function(w, h) {
         p.y = (p.y - min.y) / (max.y - min.y)
         if (swap) {
             var u = p.x
-            p.x = p.y
+            p.x = 1 - p.y
             p.y = u
         }
         p.x = p.x * (w - x) + x
