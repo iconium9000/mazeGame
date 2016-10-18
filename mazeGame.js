@@ -370,12 +370,8 @@ function drawNode(n) {
         return
     }
     var g = Game.g
-    var r = Game.lvl.val.radius / Game.nodeRadiusFactor
-    if (n.gate == null ) {
-        g.fillStyle = Game.wallColor
-    } else {
-        g.fillStyle = n.gate.isOpen() ? n.gate.color : Game.closedColor
-    }
+    var r = Game.lvl.val.radius / Game.wallWidthFactor
+    g.fillStyle = n.gate.isOpen() ? n.gate.color : Game.closedColor
     n.point.fillCircle(g, r)
 }
 //------------------------------------------------------------
@@ -874,21 +870,21 @@ Level.prototype.resize = function(w, h) {
     this.targets.foreach(function(tar) {
         var han = tar.handle
         if (han || tar.portal) {
-            var node
+            var src
             
             if ( tar.portal && tar.portal.nodes.size() == 1 ) {
-                node = tar.portal.nodes.head.val
+                src = tar.portal.nodes.head.val.point
+            } else if ( tar.handle ) {
+                src = tar.handle.parent
             } else {
-                node = lvl.getNearestNode(tar.point)   
+                src = lvl.getNearestNode(tar.point)
+                if ( src ) {
+                    src = src.point
+                } else {
+                    return
+                }
             }
-
-            var src
-            if (han == null || tar.point.dist(node.point) < han.parent.dist(tar.point)) {
-                src = node.point
-            } else {
-                src = han.parent
-            }
-            tar.point.sub(src).scale(lvl.radius / tar.point.length()).sum(src)
+            tar.point.sub(src).scale(lvl.radius / tar.point.length()).sum(src)    
         }
     })
 }
@@ -996,7 +992,7 @@ var Game = {
     padFactor: 2e4,
     wallWidthFactor: 3,
     doorWidthFactor: 7,
-    handleRadiusFactor: 4,
+    handleRadiusFactor: 3,
     nodeRadiusFactor: 2.5,
     keyRadiusFactor: 2,
     playerSpeed: 0.007,
