@@ -1017,6 +1017,7 @@ var Game = {
                 }
             }
             while (s.readBoolean()) {
+                var l = s.readBoolean()
                 var a = lvl.getNodeAt(s.readPoint())
                 var b = lvl.getNodeAt(s.readPoint())
                 lvl.links.add(new Link(a,b,s.readBoolean()))
@@ -1036,6 +1037,9 @@ var Game = {
                 if (s.readBoolean()) {
                     tar.portal = new Portal(lvl)
                     lvl.portals.add(tar)
+                    while ( s.readBoolean() ) {
+                        s.readPoint()
+                    }
                 }
                 if (tar.player || tar.key ) {
                     lvl.homes.add(tar)
