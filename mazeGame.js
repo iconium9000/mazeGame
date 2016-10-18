@@ -196,8 +196,8 @@ List.prototype.clear = function() {
     this.head = this.tail = null
 }
 List.prototype.contains = function(v) {
-    for (var n = this.head; n ; n = n.next)
-        if ( n.val == v ) {
+    for (var n = this.head; n; n = n.next)
+        if (n.val == v) {
             return true
         }
     return false
@@ -211,7 +211,7 @@ List.prototype.add = function(v) {
     return this
 }
 List.prototype.remove = function(v) {
-    for (var n = this.head; n ; n = n.next)
+    for (var n = this.head; n; n = n.next)
         if (n.val == v) {
             return n.kill()
         }
@@ -230,28 +230,28 @@ List.prototype.addArray = function(a) {
     return this
 }
 List.prototype.addList = function(l) {
-    for (var n = l.head; n ; n = n.next) {
+    for (var n = l.head; n; n = n.next) {
         this.add(n.val)
     }
     return this
 }
 List.prototype.foreach = function(f) {
-    for (var n = this.head; n ; n = n.next) {
+    for (var n = this.head; n; n = n.next) {
         f(n.val)
     }
     return this
 }
 List.prototype.foreach2 = function(f) {
-    for (var a = this.head; a ; a = a.next) {
-        for (var b = a.next; b ; b = b.next) {
+    for (var a = this.head; a; a = a.next) {
+        for (var b = a.next; b; b = b.next) {
             f(a.val, b.val)
         }
     }
     return this
 }
 List.prototype.sortif = function(f) {
-    for (var a = this.head; a ; a = a.next) {
-        for (var b = a.next; b ; b = b.next) {
+    for (var a = this.head; a; a = a.next) {
+        for (var b = a.next; b; b = b.next) {
             if (f(a.val, b.val)) {
                 var v = a.val
                 a.val = b.val
@@ -262,7 +262,7 @@ List.prototype.sortif = function(f) {
     return this
 }
 List.prototype.findif = function(f) {
-    for (var n = this.head; n ; n = n.next) {
+    for (var n = this.head; n; n = n.next) {
         if (f(n.val)) {
             return true
         }
@@ -270,7 +270,7 @@ List.prototype.findif = function(f) {
     return false
 }
 List.prototype.returnif = function(f) {
-    for (var n = this.head; n ; n = n.next) {
+    for (var n = this.head; n; n = n.next) {
         if (f(n.val)) {
             return n.val
         }
@@ -279,7 +279,7 @@ List.prototype.returnif = function(f) {
 }
 List.prototype.returnallif = function(f) {
     var list = new List
-    for (var n = this.head; n ; n = n.next) {
+    for (var n = this.head; n; n = n.next) {
         if (f(n.val)) {
             list.add(n.val)
         }
@@ -288,7 +288,7 @@ List.prototype.returnallif = function(f) {
 }
 List.prototype.removeif = function(f) {
     var a = []
-    for (var n = this.head; n ; n = n.next) {
+    for (var n = this.head; n; n = n.next) {
         if (f(n.val)) {
             a.push(n.kill())
         }
@@ -296,7 +296,7 @@ List.prototype.removeif = function(f) {
     return a
 }
 List.prototype.alltrue = function(f) {
-    for (var n = this.head; n ; n = n.next) {
+    for (var n = this.head; n; n = n.next) {
         if (!f(n.val)) {
             return false
         }
@@ -305,7 +305,7 @@ List.prototype.alltrue = function(f) {
 }
 List.prototype.countif = function(f) {
     var i = 0
-    for (var n = this.head; n ; n = n.next) {
+    for (var n = this.head; n; n = n.next) {
         if (f(n.val)) {
             i++
         }
@@ -314,7 +314,7 @@ List.prototype.countif = function(f) {
 }
 List.prototype.size = function() {
     var i = 0
-    for (var n = this.head; n ; n = n.next) {
+    for (var n = this.head; n; n = n.next) {
         i++
     }
     return i
@@ -374,7 +374,7 @@ function drawNode(n) {
     if (n.gate == null ) {
         g.fillStyle = Game.wallColor
     } else {
-        g.fillStyle = n.gate.isOpen() ? Game.doorColor : Game.closeColor
+        g.fillStyle = n.gate.isOpen() ? n.gate.color : Game.closedColor
     }
     n.point.fillCircle(g, r)
 }
@@ -417,13 +417,13 @@ function drawLink(l) {
         g.setLineDash([])
     } else {
         if (l.isLaser) {
-            g.strokeStyle = l.gate.color
+            g.strokeStyle = l.gate.isOpen() ? l.gate.color : Game.closedColor
             g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
         } else if (l.isOpen()) {
             g.strokeStyle = Game.doorColor
             g.setLineDash([r / Game.wallWidthFactor])
         } else {
-            g.strokeStyle = Game.closeColor
+            g.strokeStyle = Game.closedColor
             g.setLineDash([])
         }
         g.lineWidth = r / Game.doorWidthFactor
@@ -437,7 +437,9 @@ Link.prototype.checkGate = function() {
     if (this.gate == null )
         return
     var link = this
-    var mn = this.nodes.returnif(function(n){ return n.gate != null && n.gate.master != null})
+    var mn = this.nodes.returnif(function(n) {
+        return n.gate != null && n.gate.master != null
+    })
     if (mn) {
         this.gate = mn.gate;
     }
@@ -446,9 +448,9 @@ Link.prototype.checkGate = function() {
             return
         n.gate = link.gate
         n.targets.foreach(function(t) {
-            if ( t.handle ) {
-                t.handle.gate = link.gate    
-            } else if ( t.portal ) {
+            if (t.handle) {
+                t.handle.gate = link.gate
+            } else if (t.portal) {
                 t.portal.gate = link.gate
             }
             link.gate.targets.add(t)
@@ -467,17 +469,15 @@ Link.prototype.setGate = function(g) {
 Link.prototype.resetGate = function() {
     var na = this.a.gate
     var nb = this.b.gate
-
-    if (na == null) {
+    if (na == null ) {
         this.gate = nb == null ? new Gate() : nb;
-    } else if (nb == null) {
+    } else if (nb == null ) {
         this.gate = na;
-    } else if (nb.master == null) {
+    } else if (nb.master == null ) {
         this.gate = na;
     } else {
         this.gate = nb;
     }
-
     this.checkGate()
 }
 //------------------------------------------------------------
@@ -488,8 +488,8 @@ var Portal = function(lvl) {
     this.turn = Math.random() * Math.PI
     this.nodes = new List
 }
-Portal.prototype.addNode = function(n) {
-    if ( this.nodes.contains(n) ) {
+Portal.prototype.addNode = function(n,tar) {
+    if (this.nodes.contains(n)) {
         return
     }
     var gate = this.gate
@@ -500,10 +500,12 @@ Portal.prototype.addNode = function(n) {
             t.portal.gate = gate
         }
     })
-    n.targets.add(target);
-    this.nodes.add(n);
-    n.gate = gate;
-    n.links.forEach(function(l){ l.checkGate() });
+    n.targets.add(tar)
+    this.nodes.add(n)
+    n.gate = gate
+    n.links.foreach(function(l) {
+        l.checkGate()
+    })
 }
 function drawPortal(t) {
     var p = t.portal
@@ -511,13 +513,18 @@ function drawPortal(t) {
         return
     var r = Game.lvl.val.radius
     var g = Game.g
-    g.strokeStyle = p.gate.isOpen() ? Game.portalColor : Game.closeColor
+    g.strokeStyle = p.gate.isOpen() ? Game.portalColor : Game.closedColor
     g.lineWidth = r / Game.doorWidthFactor
     g.setLineDash([])
     var r = t.level.radius * Math.abs(Math.cos(p.turn))
     t.point.drawCircle(g, r)
     p.turn += window.elapsed * Game.pulseSpeed
     p.turn %= Math.PI * 2
+
+    g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
+    p.nodes.foreach(function(n){
+        n.point.drawLine(Game.g,t.point)
+    })
 }
 //------------------------------------------------------------
 // PLAYER.JS
@@ -530,7 +537,7 @@ var Player = function(lvl, tar) {
 }
 function drawPlayer(tar) {
     var player = tar.player
-    if (player == null || player.index == Game.drawIndex ) {
+    if (player == null || player.index == Game.drawIndex) {
         return
     }
     player.index = Game.drawIndex
@@ -583,7 +590,7 @@ function drawKey(t) {
 // HANDLE.JS
 //------------------------------------------------------------
 var Handle = function(targetOrNode, han, is) {
-    if ( targetOrNode.links ) {
+    if (targetOrNode.links) {
         this.gate = targetOrNode.gate
         targetOrNode.targets.add(han)
     } else {
@@ -601,7 +608,7 @@ function drawHandle(t) {
     }
     var g = Game.g
     var r = Game.lvl.val.radius
-    g.strokeStyle = g.fillStyle = h.gate.isOpen() ? h.gate.color : Game.closeColor
+    g.strokeStyle = g.fillStyle = h.gate.isOpen() ? h.gate.color : Game.closedColor
     g.lineWidth = r / Game.doorWidthFactor
     g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
     t.point.drawLine(g, h.parent)
@@ -668,7 +675,7 @@ Target.prototype.isEmpty = function() {
     return this.handle == null && this.portal == null && this.key == null && this.player == null
 }
 Target.prototype.movePlayerFrom = function(target) {
-    if (this.player ) {
+    if (this.player) {
         return false
     }
     var wasEmpty = this.isEmpty()
@@ -687,11 +694,11 @@ Target.prototype.movePlayerFrom = function(target) {
 }
 Target.prototype.drag = function(a, b) {
     this.sum(a).sub(b)
-    if (portal )
+    if (portal)
         portal.forEach(function(t) {
             t.drag(a, b)
         })
-    if (handle )
+    if (handle)
         handle.update(this)
 }
 //------------------------------------------------------------
@@ -711,7 +718,7 @@ Path.prototype.startPath = function() {
     if (!this.links.isEmpty()) {
         var startPortal = lvl.getNearestActivePortal(this.start)
         var endPortal = lvl.getNearestActivePortal(this.end)
-        if ( startPortal && endPortal ) {
+        if (startPortal && endPortal) {
             this.isPortal = startPortal == this.start
             if (endPortal != this.end) {
                 this.next = this.end
@@ -720,7 +727,7 @@ Path.prototype.startPath = function() {
             this.links.clear()
         }
     }
-    if ( this.start.key && this.end.key ) {
+    if (this.start.key && this.end.key) {
         Game.releaseKey = true
     }
     this.transport = new Target(lvl,p)
@@ -733,16 +740,14 @@ Path.prototype.draw = function(g) {
     g.setLineDash([10])
     g.lineWidth = 4
     var lvl = Game.lvl.val
-    if ( this.transport ) {
+    if (this.transport) {
         drawKey(this.transport)
         drawPlayer(this.transport)
-
         var trav = this.transport.point.dist(this.start.point)
         var d = Game.playerSpeed * window.elapsed * this.dist
-
         if (trav + d > this.dist) {
             var onNode = lvl.getNearestNode(this.end.point).point.dist(this.end.point) < lvl.radius / Game.nodeRadiusFactor
-            if (!this.links.isEmpty() || ( this.transport.key && this.end.key ) || onNode) {
+            if (!this.links.isEmpty() || (this.transport.key && this.end.key) || onNode) {
                 var temp = this.end
                 this.end = this.start
                 this.start = temp
@@ -756,7 +761,7 @@ Path.prototype.draw = function(g) {
             Game.releaseKey = han && key && han.isSquare == key.isSquare
             if (!this.isPortal && this.end.isValidPortal()) {
                 var po = this.end.level.getOtherPortal(this.end)
-                if (po.player ) {
+                if (po.player) {
                     this.transport = null
                     return
                 }
@@ -785,7 +790,7 @@ Path.prototype.draw = function(g) {
                 this.dist = this.end.point.dist(this.start.point)
                 this.links.clear()
                 this.next = null
-                if ( a.dist(this.start.point) == 0.0 )
+                if (a.dist(this.start.point) == 0.0)
                     a.copy(b)
             } else {
                 a.copy(b)
@@ -818,7 +823,7 @@ Level.prototype.draw = function() {
     this.targets.foreach(drawPortal)
     this.targets.foreach(drawKey)
     this.targets.foreach(drawPlayer)
-    if (this.path )
+    if (this.path)
         this.path.draw(Game.g)
     if (this.sel && this.sel.key && !Game.releaseKey) {
         g.fillStyle = Game.backGroundColor
@@ -860,7 +865,7 @@ Level.prototype.resize = function(w, h) {
     this.nodes.foreach(scale)
     this.targets.foreach(scale)
     this.homes.foreach(scale)
-    if (this.path ) {
+    if (this.path) {
         scale(this.path.transport)
     }
     min.set(x, y)
@@ -868,8 +873,15 @@ Level.prototype.resize = function(w, h) {
     this.radius = Game.radius * this.maxPoint.length() / this.startSize
     this.targets.foreach(function(tar) {
         var han = tar.handle
-        if (han || tar.portal ) {
-            var node = lvl.getNearestNode(tar.point)
+        if (han || tar.portal) {
+            var node
+            
+            if ( tar.portal && tar.portal.nodes.size() == 1 ) {
+                node = tar.portal.nodes.head.val
+            } else {
+                node = lvl.getNearestNode(tar.point)   
+            }
+
             var src
             if (han == null || tar.point.dist(node.point) < han.parent.dist(tar.point)) {
                 src = node.point
@@ -881,19 +893,19 @@ Level.prototype.resize = function(w, h) {
     })
 }
 Level.prototype.resetLevel = function() {
-    if (this.path && this.path.transport ) {
+    if (this.path && this.path.transport) {
         return
     }
     var targets = this.targets
     targets.removeif(function(t) {
-        if (t.player ) {
+        if (t.player) {
             if (t.player.home.isEmpty()) {
                 targets.add(t.player.home)
             }
             t.player.home.player = t.player
             t.player = t.playerHome
         }
-        if (t.key ) {
+        if (t.key) {
             if (t.key.home.isEmpty()) {
                 targets.add(t.key.home)
             }
@@ -946,7 +958,7 @@ Level.prototype.getTarget = function(p) {
 Level.prototype.setTarget = function(p) {
     var tar = this.getTarget(p)
     if (this.sel == null ) {
-        if (tar && tar.player ) {
+        if (tar && tar.player) {
             this.sel = tar
         }
         return
@@ -954,11 +966,11 @@ Level.prototype.setTarget = function(p) {
     if (this.sel == null ) {
         return
     }
-    if (this.path && this.path.transport ) {
+    if (this.path && this.path.transport) {
         return
     } else if (tar == null )
         tar = new Target(this,new Point().copy(p))
-    else if (tar.player ) {
+    else if (tar.player) {
         if (tar == this.sel) {
             Game.releaseKey = !Game.releaseKey
         } else {
@@ -979,7 +991,7 @@ var Game = {
     backGroundColor: 'black',
     doorColor: '#00FF00',
     portalColor: '#FF00FF',
-    closeColor: '#FF3311',
+    closedColor: '#FF3311',
     radius: 24,
     padFactor: 2e4,
     wallWidthFactor: 3,
@@ -990,11 +1002,11 @@ var Game = {
     playerSpeed: 0.007,
     pulseSpeed: 0.002,
     turnSpeed: 0.001,
-    canvas: null,
+    canvas: null ,
     menuBar: 60,
     levelResetIndex: 0,
     drawIndex: 0,
-    g: null,
+    g: null ,
     now: 0,
     src: "https://raw.githubusercontent.com/iconium9000/mazeGame/master/mazeGame.txt",
     lastTime: 0,
@@ -1047,7 +1059,6 @@ var Game = {
                 // Target
                 var tar = new Target(lvl,s.readPoint())
                 tar.isAnchor = s.readBoolean()
-                
                 lvl.targets.add(tar)
                 if (s.readBoolean()) {
                     tar.key = new Key(tar,s.readBoolean())
@@ -1058,11 +1069,11 @@ var Game = {
                 if (s.readBoolean()) {
                     tar.portal = new Portal(lvl)
                     lvl.portals.add(tar)
-                    while ( s.readBoolean() ) {
-                        s.readPoint()
+                    while (s.readBoolean()) {
+                        tar.portal.addNode(lvl.getNodeAt(s.readPoint()),tar)
                     }
                 }
-                if (tar.player || tar.key ) {
+                if (tar.player || tar.key) {
                     lvl.homes.add(tar)
                 }
                 if (s.readBoolean()) {
@@ -1070,9 +1081,12 @@ var Game = {
                     var p = s.readPoint()
                     var n = lvl.getNodeAt(p)
                     var t = lvl.getTarget(p)
-                    if (n ) {
-                        tar.handle = new Handle(n,tar,s.readBoolean())
-                    } else if (t ) {
+                    if (n) {
+                        if ( n.gate == null ) {
+                            n.gate = new Gate()
+                        }
+                        tar.handle = new Handle(n,tar,s.readBoolean())    
+                    } else if (t) {
                         tar.handle = new Handle(t,tar,s.readBoolean())
                     } else {
                         s.readBoolean()
@@ -1107,20 +1121,19 @@ function tick() {
     g.font = parseInt(min.y / 2) + 'pt Verdana'
     g.fillStyle = Game.wallColor
     g.textAlign = 'center'
-    if (Game.lvl.prev ) {
+    if (Game.lvl.prev) {
         g.fillText("<", min.x, r)
     }
-    if (Game.lvl.next ) {
+    if (Game.lvl.next) {
         g.fillText(">", max.x, r)
     }
     var name = Game.lvl.val.name
-    if ( name.length < 18 ) {
+    if (name.length < 18) {
         g.fillText(name, w / 2, r)
     } else {
         g.font = parseInt(min.y / 3) + 'pt Verdana'
         g.fillText(name, w / 2, r - min.y / 32)
     }
-        
     window.requestAnimFrame(tick)
 }
 function mousePressed(e) {
@@ -1129,11 +1142,11 @@ function mousePressed(e) {
         var x = e.clientX
         var w = Game.canvas.width / 3
         if (x < w) {
-            if (Game.lvl.prev ) {
+            if (Game.lvl.prev) {
                 Game.lvl = Game.lvl.prev
             }
         } else if (x > 2 * w) {
-            if (Game.lvl.next ) {
+            if (Game.lvl.next) {
                 Game.lvl = Game.lvl.next
             }
         } else {
@@ -1172,9 +1185,9 @@ function init() {
     // 	Game.canvas.addEventListener("touchstart", mousePressed, false)
     Game.canvas.addEventListener("mousedown", mousePressed, false)
     // 	Game.canvas.addEventListener("touchmove", mouseDragged, false)
-//     Game.canvas.addEventListener("mousemove", mousePressed, false)
+    //     Game.canvas.addEventListener("mousemove", mousePressed, false)
     // 	Game.canvas.addEventListener("touchend", mouseReleased, false)
-//     Game.canvas.addEventListener("mouseup", mouseReleased, false)
+    //     Game.canvas.addEventListener("mouseup", mouseReleased, false)
     // 	Game.canvas.addEventListener("touchcancel", mouseReleased, false)
     $(window).resize(resize)
     // 	$( document ).keypress( keyPress )
