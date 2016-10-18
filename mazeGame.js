@@ -195,6 +195,13 @@ List.prototype.isEmpty = function() {
 List.prototype.clear = function() {
     this.head = this.tail = null
 }
+List.prototype.contains = function(v) {
+    for (var n = this.head; n ; n = n.next)
+        if ( n.val == v ) {
+            return true
+        }
+    return false
+}
 List.prototype.add = function(v) {
     if (this.head == null ) {
         this.head = this.tail = new ListNode(this,v)
@@ -371,14 +378,12 @@ function drawNode(n) {
     }
     n.point.fillCircle(g, r)
 }
-function clearGate(n) {
-    n.gate = null
-}
 //------------------------------------------------------------
 // GATE.JS
 //------------------------------------------------------------
 var Gate = function(m) {
     this.master = m
+    this.color = m ? Game.portalColor : Game.doorColor
     this.targets = new List
 }
 Gate.prototype.isOpen = function() {
@@ -391,9 +396,10 @@ Gate.prototype.isOpen = function() {
 //------------------------------------------------------------
 // LINK.JS
 //------------------------------------------------------------
-var Link = function(a, b, d) {
+var Link = function(l, a, b, d) {
     this.line = new Line(a.point,b.point)
     this.nodes = new List().addAll(a, b)
+    this.isLaser = d && l
     this.a = a
     this.b = b
     a.links.add(this)
@@ -410,7 +416,10 @@ function drawLink(l) {
         g.lineWidth = r / Game.wallWidthFactor
         g.setLineDash([])
     } else {
-        if (l.isOpen()) {
+        if (l.isLaser) {
+            g.strokeStyle = l.gate.color
+            g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
+        } else if (l.isOpen()) {
             g.strokeStyle = Game.doorColor
             g.setLineDash([r / Game.wallWidthFactor])
         } else {
@@ -428,12 +437,20 @@ Link.prototype.checkGate = function() {
     if (this.gate == null )
         return
     var link = this
+    var mn = this.nodes.returnif(function(n){ return n.gate != null && n.gate.master != null})
+    if (mn) {
+        this.gate = mn.gate;
+    }
     link.nodes.foreach(function(n) {
         if (n.gate == link.gate)
             return
         n.gate = link.gate
         n.targets.foreach(function(t) {
-            t.handle.gate = link.gate
+            if ( t.handle ) {
+                t.handle.gate = link.gate    
+            } else if ( t.portal ) {
+                t.portal.gate = link.gate
+            }
             link.gate.targets.add(t)
         })
         n.links.foreach(function(l) {
@@ -450,37 +467,43 @@ Link.prototype.setGate = function(g) {
 Link.prototype.resetGate = function() {
     var na = this.a.gate
     var nb = this.b.gate
-    var nan = na == null
-    this.gate = this.gate == null && (nan != (nb == null ) || (!nan && na == nb)) ? nan ? nb : na : new Gate
+
+    if (na == null) {
+        this.gate = nb == null ? new Gate() : nb;
+    } else if (nb == null) {
+        this.gate = na;
+    } else if (nb.master == null) {
+        this.gate = na;
+    } else {
+        this.gate = nb;
+    }
+
     this.checkGate()
-}
-Link.prototype.clearGate = function() {
-    if (gate == null )
-        return
-    var g = gate
-    this.gate = null
-    this.nodes.foreach(clearGate)
-    this.nodes.foreach(function(n) {
-        n.links.foreach(function(l) {
-            if (l.gate == g) {
-                l.resetGate
-            }
-        })
-    })
-    this.nodes.foreach(function(n) {
-        if (n.gate == null ) {
-            n.targets.foreach(deleteHandle)
-            n.targets.clear()
-        }
-    })
 }
 //------------------------------------------------------------
 // PORTAL.JS
 //------------------------------------------------------------
 var Portal = function(lvl) {
     this.gate = new Gate(lvl.portals)
-    this.targets = new List
     this.turn = Math.random() * Math.PI
+    this.nodes = new List
+}
+Portal.prototype.addNode = function(n) {
+    if ( this.nodes.contains(n) ) {
+        return
+    }
+    var gate = this.gate
+    n.targets.foreach(function(t) {
+        if (t.handle) {
+            t.handle.gate = gate
+        } else if (t.portal) {
+            t.portal.gate = gate
+        }
+    })
+    n.targets.add(target);
+    this.nodes.add(n);
+    n.gate = gate;
+    n.links.forEach(function(l){ l.checkGate() });
 }
 function drawPortal(t) {
     var p = t.portal
@@ -559,16 +582,14 @@ function drawKey(t) {
 //------------------------------------------------------------
 // HANDLE.JS
 //------------------------------------------------------------
-var Handle = function(targetOrHandle, han, is) {
-    if (targetOrHandle.links ) {
-        this.color = Game.doorColor
-        this.gate = targetOrHandle.gate
-        targetOrHandle.targets.add(han)
+var Handle = function(targetOrNode, han, is) {
+    if ( targetOrNode.links ) {
+        this.gate = targetOrNode.gate
+        targetOrNode.targets.add(han)
     } else {
-        this.gate = targetOrHandle.portal.gate
-        this.color = Game.portalColor
+        this.gate = targetOrNode.portal.gate
     }
-    this.parent = targetOrHandle.point
+    this.parent = targetOrNode.point
     this.gate.targets.add(han)
     this.isSquare = is
 }
@@ -580,7 +601,7 @@ function drawHandle(t) {
     }
     var g = Game.g
     var r = Game.lvl.val.radius
-    g.strokeStyle = g.fillStyle = h.gate.isOpen() ? h.color : Game.closeColor
+    g.strokeStyle = g.fillStyle = h.gate.isOpen() ? h.gate.color : Game.closeColor
     g.lineWidth = r / Game.doorWidthFactor
     g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
     t.point.drawLine(g, h.parent)
@@ -1020,7 +1041,7 @@ var Game = {
                 var l = s.readBoolean()
                 var a = lvl.getNodeAt(s.readPoint())
                 var b = lvl.getNodeAt(s.readPoint())
-                lvl.links.add(new Link(a,b,s.readBoolean()))
+                lvl.links.add(new Link(l,a,b,s.readBoolean()))
             }
             while (s.readBoolean()) {
                 // Target
