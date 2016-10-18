@@ -645,9 +645,11 @@ Target.prototype.linkCross = function(b) {
     var pb = b.point
     var lvl = a.level
     return lvl.links.returnallif(function(l) {
-        if (!l.line.lineCross(pa, pb))
+        if (l.isLaser) {
             return false
-        if (l.gate == null || !l.gate.isOpen()) {
+        } else if (!l.line.lineCross(pa, pb)) {
+            return false
+        } else if (l.gate == null || !l.gate.isOpen()) {
             return true
         } else if (a.handle == null ) {
             return false
@@ -852,7 +854,7 @@ Level.prototype.resize = function(w, h) {
         p.y = (p.y - min.y) / (max.y - min.y)
         if (swap) {
             var u = p.x
-            p.x = 1 - p.y
+            p.x = p.y
             p.y = u
         }
         p.x = p.x * (w - x) + x
@@ -871,7 +873,6 @@ Level.prototype.resize = function(w, h) {
         var han = tar.handle
         if (han || tar.portal) {
             var src
-            
             if ( tar.portal && tar.portal.nodes.size() == 1 ) {
                 src = tar.portal.nodes.head.val.point
             } else if ( tar.handle ) {
