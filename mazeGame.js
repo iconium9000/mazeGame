@@ -512,8 +512,8 @@ function drawPortal(t) {
     g.strokeStyle = p.gate.isOpen() ? Game.portalColor : Game.closedColor
     g.lineWidth = r / Game.doorWidthFactor
     g.setLineDash([])
-    var r = t.level.radius * Math.abs(Math.cos(p.turn))
-    t.point.drawCircle(g, r)
+    var r = t.level.radius
+    t.point.drawCircle(g, r * Math.abs(Math.cos(p.turn)))
     p.turn += window.elapsed * Game.pulseSpeed
     p.turn %= Math.PI * 2
 
@@ -839,8 +839,8 @@ Level.prototype.resize = function(w, h) {
     var min = this.minPoint
     var max = this.maxPoint
     var pad = this.pad
-    var x = w / 15
-    var y = h / 15
+    var x = w / 20
+    var y = h / 20
     w -= x
     h -= y * 2
     var index = Game.levelResetIndex++
@@ -885,7 +885,7 @@ Level.prototype.resize = function(w, h) {
                     return
                 }
             }
-            tar.point.sub(src).scale(lvl.radius / tar.point.length()).sum(src)    
+            tar.point.sub(src).scale(1.5 * lvl.radius / tar.point.length()).sum(src)    
         }
     })
 }
