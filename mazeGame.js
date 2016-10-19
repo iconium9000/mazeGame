@@ -585,14 +585,10 @@ function drawKey(t) {
 //------------------------------------------------------------
 // HANDLE.JS
 //------------------------------------------------------------
-var Handle = function(targetOrNode, han, is) {
-    if (targetOrNode.links) {
-        this.gate = targetOrNode.gate
-        targetOrNode.targets.add(han)
-    } else {
-        this.gate = targetOrNode.portal.gate
-    }
-    this.parent = targetOrNode.point
+var Handle = function(node, han, is) {
+    this.gate = node.gate
+    node.targets.add(han)
+    this.node = node
     this.gate.targets.add(han)
     this.isSquare = is
 }
@@ -607,7 +603,7 @@ function drawHandle(t) {
     g.strokeStyle = g.fillStyle = h.gate.isOpen() ? h.gate.color : Game.closedColor
     g.lineWidth = r / Game.doorWidthFactor
     g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
-    t.point.drawLine(g, h.parent)
+    t.point.drawLine(g, h.node.point)
     if (h.isSquare) {
         t.point.fillSquare(g, r / Game.handleRadiusFactor)
     } else {
@@ -876,7 +872,7 @@ Level.prototype.resize = function(w, h) {
             if ( tar.portal && tar.portal.nodes.size() == 1 ) {
                 src = tar.portal.nodes.head.val.point
             } else if ( tar.handle ) {
-                src = tar.handle.parent
+                src = tar.handle.node.point
             } else {
                 src = lvl.getNearestNode(tar.point)
                 if ( src ) {
@@ -1077,14 +1073,8 @@ var Game = {
                     // Handle
                     var p = s.readPoint()
                     var n = lvl.getNodeAt(p)
-                    var t = lvl.getTarget(p)
                     if (n) {
-                        if ( n.gate == null ) {
-                            n.gate = new Gate()
-                        }
                         tar.handle = new Handle(n,tar,s.readBoolean())    
-                    } else if (t) {
-                        tar.handle = new Handle(t,tar,s.readBoolean())
                     } else {
                         s.readBoolean()
                     }
@@ -1093,7 +1083,7 @@ var Game = {
             lvl.startSize = lvl.maxPoint.length()
             lvl.pad = Game.padFactor / lvl.startSize
             lvl.resize(Game.canvas.width, Game.canvas.height)
-            console.log(lvl.name + "\t" + lvl.nodes.size() + "\t" + lvl.links.size() + "\t" + lvl.targets.size() + "\t" + lvl.score + "\t" + lvl.pad + "\t" + lvl.radius)
+            console.log(lvl.targets.size() + "\t\t" + lvl.name)
         }
         Game.lvl = Game.levels.head
     }
