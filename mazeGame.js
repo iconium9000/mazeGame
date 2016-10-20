@@ -1166,7 +1166,7 @@ function mousePressed(e) {
                 Game.lvl = Game.lvl.prev
             }
         } else if (x > 2 * w) {
-            if (Game.lvl.next ) {//&& Game.lvl.val.isUnlocked) {
+            if (Game.lvl.next && Game.lvl.val.isUnlocked) {
                 Game.lvl = Game.lvl.next                
             }
         } else {
