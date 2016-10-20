@@ -304,6 +304,14 @@ List.prototype.alltrue = function(f) {
     }
     return true
 }
+List.prototype.allfalse = function(f) {
+    for (var n = this.head; n; n = n.next) {
+        if (f(n.val)) {
+            return false
+        }
+    }
+    return true
+}
 List.prototype.countif = function(f) {
     var i = 0
     for (var n = this.head; n; n = n.next) {
@@ -367,7 +375,9 @@ var Node = function(p) {
     this.gate = null
 }
 function drawNode(n) {
-    if (n.gate == null ) {
+    if (n.gate == null || n.links.allfalse(function(l){
+        return l.gate == null
+    } ) ) {
         return
     }
     var g = Game.g
@@ -482,7 +492,7 @@ Link.prototype.resetGate = function() {
 //------------------------------------------------------------
 var Portal = function(lvl) {
     this.gate = new Gate(lvl.portals)
-    this.turn = Math.random() * Math.PI
+//     this.turn = Math.random() * Math.PI
     this.nodes = new List
 }
 Portal.prototype.addNode = function(n, tar) {
@@ -510,17 +520,21 @@ function drawPortal(t) {
         return
     var r = Game.lvl.val.radius
     var g = Game.g
+    g.fillStyle = Game.backGroundColor
     g.strokeStyle = p.gate.isOpen() ? Game.portalColor : Game.closedColor
     g.lineWidth = r / Game.doorWidthFactor
-    g.setLineDash([])
-    var r = t.level.radius
-    t.point.drawCircle(g, r * Math.abs(Math.cos(p.turn)))
-    p.turn += window.elapsed * Game.pulseSpeed
-    p.turn %= Math.PI * 2
     g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
     p.nodes.foreach(function(n) {
         n.point.drawLine(Game.g, t.point)
     })
+    g.setLineDash([])
+    var r = t.level.radius * Math.abs(Math.cos(p.turn))
+    t.point.fillCircle(g, r)
+    t.point.drawCircle(g, r)
+
+    p.turn += window.elapsed * Game.pulseSpeed
+    p.turn %= Math.PI * 2
+
 }
 //------------------------------------------------------------
 // PLAYER.JS
@@ -601,13 +615,18 @@ function drawHandle(t) {
     var g = Game.g
     var r = Game.lvl.val.radius
     g.strokeStyle = g.fillStyle = h.gate.isOpen() ? h.gate.color : Game.closedColor
+    g.fillStyle = Game.backGroundColor
     g.lineWidth = r / Game.doorWidthFactor
     g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
     t.point.drawLine(g, h.node.point)
+    g.setLineDash([])
+    r /= Game.handleRadiusFactor
     if (h.isSquare) {
-        t.point.fillSquare(g, r / Game.handleRadiusFactor)
+        t.point.fillSquare(g, r)
+        t.point.drawSquare(g, r )
     } else {
-        t.point.fillCircle(g, r / Game.handleRadiusFactor)
+        t.point.fillCircle(g, r)
+        t.point.drawCircle(g, r )
     }
 }
 //------------------------------------------------------------
@@ -1109,6 +1128,13 @@ var Game = {
             lvl.pad = Game.padFactor / lvl.startSize
             lvl.resize(Game.canvas.width, Game.canvas.height)
             console.log(lvl.targets.size() + "\t\t" + lvl.name)
+
+            var i = 0.0
+            var l = Math.PI / lvl.portals.size()
+            lvl.portals.foreach(function(t) {
+                t.portal.turn = i * l
+                i++
+            })
         }
         Game.lvl = Game.levels.head
     }
