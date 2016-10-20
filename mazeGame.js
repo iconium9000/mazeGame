@@ -3,7 +3,7 @@
 // No authorized copying or modification.
 //------------------------------------------------------------
 
-var devMode = true
+var devMode = false
 
 //------------------------------------------------------------
 // POINT.JS
@@ -1141,7 +1141,12 @@ function tick() {
     var min = Game.lvl.val.minPoint
     var max = Game.lvl.val.maxPoint
     var r = max.y + min.y * 0.8
-    g.font = parseInt(min.y / 2) + 'pt Verdana'
+
+    var fontSize = parseInt(min.y / 2)
+    var name = Game.lvl.val.name
+    var temp = parseInt(1 * w / name.length)
+    g.font = (temp > fontSize ? fontSize : temp) + 'pt Verdana'
+    
     g.fillStyle = Game.wallColor
     g.textAlign = 'center'
     var lvl = Game.lvl.val
@@ -1156,13 +1161,9 @@ function tick() {
     if (Game.lvl.next && Game.lvl.val.isUnlocked) {
         g.fillText(">", max.x, r)
     }
-    var name = Game.lvl.val.name
-    if (name.length < 2 * w / min.y) {
-        g.fillText(name, w / 2, r)
-    } else {
-        g.font = parseInt(min.y / 3) + 'pt Verdana'
-        g.fillText(name, w / 2, r - min.y / 32)
-    }
+    
+    g.fillText(name, w / 2, r)
+
     window.requestAnimFrame(tick)
 }
 function mousePressed(e) {
