@@ -2,6 +2,9 @@
 // Copyright (c) 2016 John J FitzGerald
 // No authorized copying or modification.
 //------------------------------------------------------------
+
+var devMode = true
+
 //------------------------------------------------------------
 // POINT.JS
 //------------------------------------------------------------
@@ -797,7 +800,8 @@ Path.prototype.draw = function(g) {
 //------------------------------------------------------------
 var Level = function(n, s, i) {
     this.name = n
-    this.score = s
+    this.score = 0
+    this.defScore = s
     this.index = i
     this.radius = 28
     this.nodes = new List
@@ -868,9 +872,9 @@ Level.prototype.resize = function(w, h) {
     var max = this.maxPoint
     var pad = this.pad
     var x = w / 20
-    var y = h / 20
+    var y = h / 8
     w -= x
-    h -= y * 2
+    h -= y
     var index = Game.levelResetIndex++
     var swap = (w > h) != (max.x > max.y)
     var scale = function(n) {
@@ -931,6 +935,7 @@ Level.prototype.resetLevel = function() {
         return
     }
     var targets = this.targets
+    this.score = 0
     targets.removeif(function(t) {
         if (t.player) {
             if (t.player.home.isEmpty()) {
@@ -990,6 +995,7 @@ Level.prototype.getTarget = function(p) {
     })
 }
 Level.prototype.setTarget = function(p) {
+    ++this.score
     var tar = this.getTarget(p)
     if (this.sel == null ) {
         if (tar && tar.player) {
@@ -1134,10 +1140,13 @@ function tick() {
     Game.lvl.val.draw()
     var min = Game.lvl.val.minPoint
     var max = Game.lvl.val.maxPoint
-    var r = max.y + min.y * 1.5
+    var r = max.y + min.y * 0.8
     g.font = parseInt(min.y / 2) + 'pt Verdana'
     g.fillStyle = Game.wallColor
     g.textAlign = 'center'
+    var lvl = Game.lvl.val
+
+    g.fillText(lvl.score + " / " + lvl.defScore, w / 2, min.y / 1.5)
     if (Game.lvl.prev) {
         g.fillText("<", min.x, r)
     }
@@ -1148,7 +1157,7 @@ function tick() {
         g.fillText(">", max.x, r)
     }
     var name = Game.lvl.val.name
-    if (name.length < 18) {
+    if (name.length < 2 * w / min.y) {
         g.fillText(name, w / 2, r)
     } else {
         g.font = parseInt(min.y / 3) + 'pt Verdana'
@@ -1160,13 +1169,14 @@ function mousePressed(e) {
     Game.mouseDown = true
     if (e.clientY + 1.5 * Game.lvl.val.minPoint.y > Game.canvas.height) {
         var x = e.clientX
-        var w = Game.canvas.width / 3
+        var width = Game.canvas.width
+        var w = width / 4
         if (x < w) {
             if (Game.lvl.prev) {
                 Game.lvl = Game.lvl.prev
             }
-        } else if (x > 2 * w) {
-            if (Game.lvl.next && Game.lvl.val.isUnlocked) {
+        } else if (x > width - w) {
+            if (Game.lvl.next && (devMode || Game.lvl.val.isUnlocked)) {
                 Game.lvl = Game.lvl.next                
             }
         } else {
