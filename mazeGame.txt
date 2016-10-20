@@ -1,6 +1,6 @@
 true
 Tap, Don't Drag
-0
+2
 true
 169.0
 102.0
@@ -69,7 +69,7 @@ true
 false
 true
 Line of Sight
-0
+3
 true
 154.0
 142.0
@@ -198,7 +198,7 @@ false
 false
 true
 Double Trouble
-0
+4
 true
 102.0
 76.0
@@ -326,7 +326,7 @@ false
 false
 true
 Leave a Man Behind
-295
+4
 true
 158.0
 136.0
@@ -512,7 +512,7 @@ false
 false
 true
 Circles and Squares
-0
+6
 true
 254.0
 50.0
@@ -795,7 +795,7 @@ true
 false
 true
 Round Pegs and Square Holes
-0
+6
 true
 266.0
 160.0
@@ -971,7 +971,7 @@ true
 false
 true
 Back and Forth
-1090
+10
 true
 250.0
 165.0
@@ -1195,7 +1195,7 @@ false
 false
 true
 The Cake is a Lie
-0
+2
 true
 423.0
 92.0
@@ -1358,7 +1358,7 @@ false
 false
 true
 Zig Zag
-0
+6
 true
 206.0
 57.0
@@ -1618,7 +1618,7 @@ false
 false
 true
 Broken Heart
-1047
+14
 true
 121.0
 165.0
@@ -2033,7 +2033,7 @@ false
 false
 true
 Soo... Easy
-0
+26
 true
 210.0
 98.0
@@ -2423,7 +2423,7 @@ false
 false
 true
 Working Together
-0
+36
 true
 248.0
 129.0
@@ -3257,7 +3257,7 @@ false
 false
 true
 Not Pangea
-0
+21
 true
 300.0
 122.0
