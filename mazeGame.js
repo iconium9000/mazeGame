@@ -2,9 +2,7 @@
 // Copyright (c) 2016 John J FitzGerald
 // No authorized copying or modification.
 //------------------------------------------------------------
-
 var devMode = false
-
 //------------------------------------------------------------
 // POINT.JS
 //------------------------------------------------------------
@@ -331,28 +329,28 @@ var StringIO = function(a) {
 }
 StringIO.prototype.readString = function() {
     var s = this.array[this.index]
-//     console.log("readString " + s)
+    //     console.log("readString " + s)
     this.index++
     return s
 }
 StringIO.prototype.readInteger = function() {
     var s = this.array[this.index]
     var i = parseInt(s)
-//     console.log("readInteger " + s + " " + i)
+    //     console.log("readInteger " + s + " " + i)
     this.index++
     return i
 }
 StringIO.prototype.readFloat = function() {
     var s = this.array[this.index]
     var i = parseFloat(s)
-//     console.log("readFloat " + s + " " + i)
+    //     console.log("readFloat " + s + " " + i)
     this.index++
     return i
 }
 StringIO.prototype.readBoolean = function() {
     var s = this.array[this.index]
     var i = s == "true"
-//     console.log("readBoolean " + s + " " + i + " ")
+    //     console.log("readBoolean " + s + " " + i + " ")
     this.index++
     return i
 }
@@ -487,7 +485,7 @@ var Portal = function(lvl) {
     this.turn = Math.random() * Math.PI
     this.nodes = new List
 }
-Portal.prototype.addNode = function(n,tar) {
+Portal.prototype.addNode = function(n, tar) {
     if (this.nodes.contains(n)) {
         return
     }
@@ -519,10 +517,9 @@ function drawPortal(t) {
     t.point.drawCircle(g, r * Math.abs(Math.cos(p.turn)))
     p.turn += window.elapsed * Game.pulseSpeed
     p.turn %= Math.PI * 2
-
     g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
-    p.nodes.foreach(function(n){
-        n.point.drawLine(Game.g,t.point)
+    p.nodes.foreach(function(n) {
+        n.point.drawLine(Game.g, t.point)
     })
 }
 //------------------------------------------------------------
@@ -850,16 +847,12 @@ Level.prototype.draw = function() {
     }
     this.links.foreach(drawLink)
     this.nodes.foreach(drawNode)
-
     var n = this.finalNode
     var p = this.finalPoint
-
     g.strokeStyle = n.gate.isOpen() ? n.gate.master ? Game.portalColor : Game.doorColor : Game.closedColor
     g.lineWidth = this.radius / Game.doorWidthFactor
     g.setLineDash([])
-
     n = n.point
-    
     p.drawLine(g, n)
     var fa = p.freeA().sub(n).unit(this.radius / Game.handleRadiusFactor)
     var fb = fa.freeB().inverse()
@@ -895,38 +888,35 @@ Level.prototype.resize = function(w, h) {
     this.nodes.foreach(scale)
     this.targets.foreach(scale)
     this.homes.foreach(scale)
-
-    scale({point:this.finalPoint})
-
+    scale({
+        point: this.finalPoint
+    })
     if (this.path) {
         scale(this.path.transport)
     }
     min.set(x, y)
     max.set(w, h)
-
     this.radius = Game.radius * this.maxPoint.length() / this.startSize
-    
     var n = this.finalNode.point
     var p = this.finalPoint
     p.sub(n).scale(1.5 * this.radius / p.length()).sum(n)
-
     this.targets.foreach(function(tar) {
         var han = tar.handle
         if (han || tar.portal) {
             var src
-            if ( tar.portal && tar.portal.nodes.size() == 1 ) {
+            if (tar.portal && tar.portal.nodes.size() == 1) {
                 src = tar.portal.nodes.head.val.point
-            } else if ( tar.handle ) {
+            } else if (tar.handle) {
                 src = tar.handle.node.point
             } else {
                 src = lvl.getNearestNode(tar.point)
-                if ( src ) {
+                if (src) {
                     src = src.point
                 } else {
                     return
                 }
             }
-            tar.point.sub(src).scale(1.5 * lvl.radius / tar.point.length()).sum(src)    
+            tar.point.sub(src).scale(1.5 * lvl.radius / tar.point.length()).sum(src)
         }
     })
 }
@@ -1098,7 +1088,7 @@ var Game = {
                     tar.portal = new Portal(lvl)
                     lvl.portals.add(tar)
                     while (s.readBoolean()) {
-                        tar.portal.addNode(lvl.getNodeAt(s.readPoint()),tar)
+                        tar.portal.addNode(lvl.getNodeAt(s.readPoint()), tar)
                     }
                 }
                 if (tar.player || tar.key) {
@@ -1109,7 +1099,7 @@ var Game = {
                     var p = s.readPoint()
                     var n = lvl.getNodeAt(p)
                     if (n) {
-                        tar.handle = new Handle(n,tar,s.readBoolean())    
+                        tar.handle = new Handle(n,tar,s.readBoolean())
                     } else {
                         s.readBoolean()
                     }
@@ -1120,7 +1110,6 @@ var Game = {
             lvl.resize(Game.canvas.width, Game.canvas.height)
             console.log(lvl.targets.size() + "\t\t" + lvl.name)
         }
-
         Game.lvl = Game.levels.head
     }
 }
@@ -1141,44 +1130,42 @@ function tick() {
     var min = Game.lvl.val.minPoint
     var max = Game.lvl.val.maxPoint
     var r = max.y + min.y * 0.8
-
-    var fontSize = parseInt(min.y / 2)
+    this.fontSize = parseInt(min.y / 2)
     var name = Game.lvl.val.name
     var temp = parseInt(1 * w / name.length)
-    g.font = (temp > fontSize ? fontSize : temp) + 'pt Verdana'
-    
-    g.fillStyle = Game.wallColor
+    this.fontSize = (temp > this.fontSize ? this.fontSize : temp)
+    g.font = this.fontSize + 'pt Verdana'
+    g.strokeStyle = g.fillStyle = Game.wallColor
     g.textAlign = 'center'
     var lvl = Game.lvl.val
+
 
     g.fillText(lvl.score + " / " + lvl.defScore, w / 2, min.y / 1.5)
     if (Game.lvl.prev) {
         g.fillText("<", min.x, r)
     }
-    if ( !Game.lvl.val.isUnlocked && Game.lvl.val.finalNode.gate.isOpen() ) {
+    if (!Game.lvl.val.isUnlocked && Game.lvl.val.finalNode.gate.isOpen()) {
         Game.lvl.val.isUnlocked = true
     }
     if (Game.lvl.next && Game.lvl.val.isUnlocked) {
         g.fillText(">", max.x, r)
     }
-    
     g.fillText(name, w / 2, r)
-
     window.requestAnimFrame(tick)
 }
 function mousePressed(e) {
     Game.mouseDown = true
-    if (e.clientY + 1.5 * Game.lvl.val.minPoint.y > Game.canvas.height) {
+    if (e.clientY > Game.lvl.val.maxPoint.y) {
         var x = e.clientX
         var width = Game.canvas.width
-        var w = width / 4
+        var w = width / 9
         if (x < w) {
             if (Game.lvl.prev) {
                 Game.lvl = Game.lvl.prev
             }
         } else if (x > width - w) {
             if (Game.lvl.next && (devMode || Game.lvl.val.isUnlocked)) {
-                Game.lvl = Game.lvl.next                
+                Game.lvl = Game.lvl.next
             }
         } else {
             Game.lvl.val.resetLevel()
