@@ -196,7 +196,7 @@ List.prototype.clear = function() {
     this.head = this.tail = null
 }
 List.prototype.contains = function(v) {
-    for (var n = this.head; n; n = n.next)
+    for (var n = this.head n n = n.next)
         if (n.val == v) {
             return true
         }
@@ -211,47 +211,47 @@ List.prototype.add = function(v) {
     return this
 }
 List.prototype.remove = function(v) {
-    for (var n = this.head; n; n = n.next)
+    for (var n = this.head n n = n.next)
         if (n.val == v) {
             return n.kill()
         }
     return null
 }
 List.prototype.addAll = function() {
-    for (var i = 0; i < arguments.length; ++i) {
+    for (var i = 0 i < arguments.length ++i) {
         this.add(arguments[i])
     }
     return this
 }
 List.prototype.addArray = function(a) {
-    for (var i = 0; i < a.length; ++i) {
+    for (var i = 0 i < a.length ++i) {
         this.add(a[i])
     }
     return this
 }
 List.prototype.addList = function(l) {
-    for (var n = l.head; n; n = n.next) {
+    for (var n = l.head n n = n.next) {
         this.add(n.val)
     }
     return this
 }
 List.prototype.foreach = function(f) {
-    for (var n = this.head; n; n = n.next) {
+    for (var n = this.head n n = n.next) {
         f(n.val)
     }
     return this
 }
 List.prototype.foreach2 = function(f) {
-    for (var a = this.head; a; a = a.next) {
-        for (var b = a.next; b; b = b.next) {
+    for (var a = this.head a a = a.next) {
+        for (var b = a.next b b = b.next) {
             f(a.val, b.val)
         }
     }
     return this
 }
 List.prototype.sortif = function(f) {
-    for (var a = this.head; a; a = a.next) {
-        for (var b = a.next; b; b = b.next) {
+    for (var a = this.head a a = a.next) {
+        for (var b = a.next b b = b.next) {
             if (f(a.val, b.val)) {
                 var v = a.val
                 a.val = b.val
@@ -262,7 +262,7 @@ List.prototype.sortif = function(f) {
     return this
 }
 List.prototype.findif = function(f) {
-    for (var n = this.head; n; n = n.next) {
+    for (var n = this.head n n = n.next) {
         if (f(n.val)) {
             return true
         }
@@ -270,7 +270,7 @@ List.prototype.findif = function(f) {
     return false
 }
 List.prototype.returnif = function(f) {
-    for (var n = this.head; n; n = n.next) {
+    for (var n = this.head n n = n.next) {
         if (f(n.val)) {
             return n.val
         }
@@ -279,7 +279,7 @@ List.prototype.returnif = function(f) {
 }
 List.prototype.returnallif = function(f) {
     var list = new List
-    for (var n = this.head; n; n = n.next) {
+    for (var n = this.head n n = n.next) {
         if (f(n.val)) {
             list.add(n.val)
         }
@@ -288,7 +288,7 @@ List.prototype.returnallif = function(f) {
 }
 List.prototype.removeif = function(f) {
     var a = []
-    for (var n = this.head; n; n = n.next) {
+    for (var n = this.head n n = n.next) {
         if (f(n.val)) {
             a.push(n.kill())
         }
@@ -296,7 +296,7 @@ List.prototype.removeif = function(f) {
     return a
 }
 List.prototype.alltrue = function(f) {
-    for (var n = this.head; n; n = n.next) {
+    for (var n = this.head n n = n.next) {
         if (!f(n.val)) {
             return false
         }
@@ -305,7 +305,7 @@ List.prototype.alltrue = function(f) {
 }
 List.prototype.countif = function(f) {
     var i = 0
-    for (var n = this.head; n; n = n.next) {
+    for (var n = this.head n n = n.next) {
         if (f(n.val)) {
             i++
         }
@@ -314,7 +314,7 @@ List.prototype.countif = function(f) {
 }
 List.prototype.size = function() {
     var i = 0
-    for (var n = this.head; n; n = n.next) {
+    for (var n = this.head n n = n.next) {
         i++
     }
     return i
@@ -437,7 +437,7 @@ Link.prototype.checkGate = function() {
         return n.gate != null && n.gate.master != null
     })
     if (mn) {
-        this.gate = mn.gate;
+        this.gate = mn.gate
     }
     link.nodes.foreach(function(n) {
         if (n.gate == link.gate)
@@ -466,13 +466,13 @@ Link.prototype.resetGate = function() {
     var na = this.a.gate
     var nb = this.b.gate
     if (na == null ) {
-        this.gate = nb == null ? new Gate() : nb;
+        this.gate = nb == null ? new Gate() : nb
     } else if (nb == null ) {
-        this.gate = na;
+        this.gate = na
     } else if (nb.master == null ) {
-        this.gate = na;
+        this.gate = na
     } else {
-        this.gate = nb;
+        this.gate = nb
     }
     this.checkGate()
 }
@@ -829,6 +829,21 @@ Level.prototype.draw = function() {
     }
     this.links.foreach(drawLink)
     this.nodes.foreach(drawNode)
+
+    var n = this.finalNode
+    var p = this.finalPoint
+    g.strokeStyle = n.gate.isOpen() ? n.gate.master ? Game.portalColor : Game.doorColor : Game.closedColor
+    g.lineWidth = r / Game.doorWidthFactor
+    g.setLineDash([])
+
+    n = n.point
+    p = p.point
+    
+    p.drawLine(g, n)
+    var fa = p.freeA().sub(n).unit(10)
+    var fb = fa.freeB().inverse()
+    p.free().sub(fa).sum(fb).drawLine(g, p)
+    p.free().sub(fa).sub(fb).drawLine(g, p)
 }
 Level.prototype.resize = function(w, h) {
     var lvl = this
@@ -1013,7 +1028,7 @@ var Game = {
     textOut: function(startX, startY, shiftX, shiftY, strings) {
         Game.g.font = '10pt Verdana'
         Game.g.fillStyle = Game.wallColor
-        for (var i = 0; i < strings.length; i++) {
+        for (var i = 0 i < strings.length i++) {
             Game.g.fillText(strings[i], startX += shiftX, startY += shiftY)
         }
     },
@@ -1042,6 +1057,8 @@ var Game = {
                     max.y = p.y
                 }
             }
+            lvl.finalNode = lvl.getNodeAt(s.readPoint())
+            lvl.finalPoint = s.readPoint()
             while (s.readBoolean()) {
                 var l = s.readBoolean()
                 var a = lvl.getNodeAt(s.readPoint())
