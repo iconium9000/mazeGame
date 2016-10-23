@@ -738,7 +738,9 @@ Path.prototype.startPath = function() {
             this.links.clear()
         }
     }
-    if (this.start.key && this.end.key) {
+    if ( this.end == null || this.end.player ) {
+        return
+    } else if (this.start.key && this.end.key) {
         Game.releaseKey = true
     }
     this.transport = new Target(lvl,p)
