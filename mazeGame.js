@@ -2,7 +2,7 @@
 // Copyright (c) 2016 John J FitzGerald
 // No authorized copying or modification.
 //------------------------------------------------------------
-var devMode = false
+var devMode = true
 //------------------------------------------------------------
 // POINT.JS
 //------------------------------------------------------------
