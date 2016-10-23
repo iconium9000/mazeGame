@@ -375,9 +375,9 @@ var Node = function(p) {
     this.gate = null
 }
 function drawNode(n) {
-    if (n.gate == null || n.links.allfalse(function(l){
+    if (n.gate == null || n.links.allfalse(function(l) {
         return l.gate == null
-    } ) ) {
+    })) {
         return
     }
     var g = Game.g
@@ -492,7 +492,7 @@ Link.prototype.resetGate = function() {
 //------------------------------------------------------------
 var Portal = function(lvl) {
     this.gate = new Gate(lvl.portals)
-//     this.turn = Math.random() * Math.PI
+    //     this.turn = Math.random() * Math.PI
     this.nodes = new List
 }
 Portal.prototype.addNode = function(n, tar) {
@@ -531,10 +531,8 @@ function drawPortal(t) {
     var r = t.level.radius * Math.abs(Math.cos(p.turn))
     t.point.fillCircle(g, r)
     t.point.drawCircle(g, r)
-
     p.turn += window.elapsed * Game.pulseSpeed
     p.turn %= Math.PI * 2
-
 }
 //------------------------------------------------------------
 // PLAYER.JS
@@ -623,10 +621,10 @@ function drawHandle(t) {
     r /= Game.handleRadiusFactor
     if (h.isSquare) {
         t.point.fillSquare(g, r)
-        t.point.drawSquare(g, r )
+        t.point.drawSquare(g, r)
     } else {
         t.point.fillCircle(g, r)
-        t.point.drawCircle(g, r )
+        t.point.drawCircle(g, r)
     }
 }
 //------------------------------------------------------------
@@ -1128,7 +1126,6 @@ var Game = {
             lvl.pad = Game.padFactor / lvl.startSize
             lvl.resize(Game.canvas.width, Game.canvas.height)
             console.log(lvl.targets.size() + "\t\t" + lvl.name)
-
             var i = 0.0
             var l = Math.PI / lvl.portals.size()
             lvl.portals.foreach(function(t) {
@@ -1164,8 +1161,6 @@ function tick() {
     g.strokeStyle = g.fillStyle = Game.wallColor
     g.textAlign = 'center'
     var lvl = Game.lvl.val
-
-
     g.fillText(lvl.score + " / " + lvl.defScore, w / 2, min.y / 1.5)
     if (Game.lvl.prev) {
         g.fillText("<", min.x, r)
