@@ -738,7 +738,7 @@ Path.prototype.startPath = function() {
             this.links.clear()
         }
     }
-    if ( this.end == null || this.end.player ) {
+    if (this.end == null || this.end.player) {
         return
     } else if (this.start.key && this.end.key) {
         Game.releaseKey = true
@@ -1176,27 +1176,43 @@ function tick() {
     g.fillText(name, w / 2, r)
     window.requestAnimFrame(tick)
 }
+var cheatCodes = [0, 0, 0, 1, 1, -1, -1, -1, 0, 0, -1, 0, 1]
+var cheatIndex = 0
 function mousePressed(e) {
     Game.mouseDown = true
     if (e.clientY > Game.lvl.val.maxPoint.y) {
         var x = e.clientX
         var width = Game.canvas.width
         var w = width / 9
+        var out
         if (x < w) {
             if (Game.lvl.prev) {
                 Game.lvl = Game.lvl.prev
             }
+            out = -1
         } else if (x > width - w) {
             if (Game.lvl.next && (devMode || Game.lvl.val.isUnlocked)) {
                 Game.lvl = Game.lvl.next
             }
+            out = 1
         } else {
             Game.lvl.val.resetLevel()
+            out = 0
+        }
+        if (devMode) {
+            return
+        } else if (cheatCodes[cheatIndex] == out) {
+            if (++cheatIndex == cheatCodes.length) {
+                devMode = true
+                alert("Unlocked Cheatmode")
+            }
+        } else {
+            cheatIndex = 0
         }
     } else {
         Game.mouse.set(e.clientX, e.clientY)
         Game.lvl.val.setTarget(Game.mouse)
-        Game.mouseDown = true
+        cheatIndex = 0
     }
 }
 function mouseDragged(e) {
