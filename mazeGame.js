@@ -888,7 +888,7 @@ Level.prototype.resize = function(w, h) {
     w -= x
     h -= y
     var index = Game.levelResetIndex++
-    var swap = (w > h) != (max.x > max.y)
+    var swap = (w - x > h - y) != (max.x - min.x > max.y - min.y)
     var scale = function(n) {
         if (n == null || n.index == index)
             return
@@ -1095,6 +1095,7 @@ var Game = {
             while (s.readBoolean()) {
                 // Target
                 var tar = new Target(lvl,s.readPoint())
+                lvl.setMinMax(tar.point)
                 tar.isAnchor = s.readBoolean()
                 lvl.targets.add(tar)
                 if (s.readBoolean()) {
@@ -1170,7 +1171,7 @@ function tick() {
     if (!Game.lvl.val.isUnlocked && Game.lvl.val.finalNode.gate.isOpen()) {
         Game.lvl.val.isUnlocked = true
     }
-    if (Game.lvl.next && Game.lvl.val.isUnlocked) {
+    if (Game.lvl.next && (devMode || Game.lvl.val.isUnlocked)) {
         g.fillText(">", max.x, r)
     }
     g.fillText(name, w / 2, r)
@@ -1204,7 +1205,7 @@ function mousePressed(e) {
         } else if (cheatCodes[cheatIndex] == out) {
             if (++cheatIndex == cheatCodes.length) {
                 devMode = true
-                alert("Unlocked Cheatmode")
+                console.log("Unlocked Cheatmode")
             }
         } else {
             cheatIndex = 0
