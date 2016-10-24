@@ -7442,7 +7442,7 @@ false
 false
 true
 Yosemite
-110
+100
 true
 888.0
 506.0
