@@ -1004,6 +1004,9 @@ Level.prototype.getTarget = function(p) {
     })
 }
 Level.prototype.setTarget = function(p) {
+    if (this.finalPoint.dist(p)<this.radius & &  Game.lvl.next & &  (this.isUnlocked || devMode){
+        Game.lvl = Game.lvl.next
+    } 
     ++this.score
     var tar = this.getTarget(p)
     if (this.sel == null ) {
