@@ -528,7 +528,7 @@ function drawPortal(t) {
     p.nodes.foreach(function(n) {
         n.point.drawLine(Game.g, t.point)
     })
-    g.setLineDash([5, 2 * r / Game.doorWidthFactor])
+    g.setLineDash([3 * r / Game.doorWidthFactor, 2 * r / Game.doorWidthFactor])
     var r = t.level.radius * Math.abs(Math.cos(p.turn))
     t.point.fillCircle(g, r)
     t.point.drawCircle(g, r)
