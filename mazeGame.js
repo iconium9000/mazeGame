@@ -425,7 +425,7 @@ function drawLink(l) {
     } else {
         if (l.isLaser) {
             g.strokeStyle = l.gate.isOpen() ? l.gate.color : Game.closedColor
-            g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
+            g.setLineDash([1, 4 * r / Game.doorWidthFactor])
         } else if (l.isOpen()) {
             g.strokeStyle = Game.doorColor
             g.setLineDash([r / Game.wallWidthFactor])
@@ -523,11 +523,12 @@ function drawPortal(t) {
     g.fillStyle = Game.backGroundColor
     g.strokeStyle = p.gate.isOpen() ? Game.portalColor : Game.closedColor
     g.lineWidth = r / Game.doorWidthFactor
-    g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
+    g.setLineDash([1, 4 * r / Game.doorWidthFactor])
+   
     p.nodes.foreach(function(n) {
         n.point.drawLine(Game.g, t.point)
     })
-    g.setLineDash([])
+    g.setLineDash([5, 2 * r / Game.doorWidthFactor])
     var r = t.level.radius * Math.abs(Math.cos(p.turn))
     t.point.fillCircle(g, r)
     t.point.drawCircle(g, r)
@@ -615,7 +616,7 @@ function drawHandle(t) {
     g.strokeStyle = g.fillStyle = h.gate.isOpen() ? h.gate.color : Game.closedColor
     g.fillStyle = Game.backGroundColor
     g.lineWidth = r / Game.doorWidthFactor
-    g.setLineDash([1, 1.5 * r / Game.doorWidthFactor])
+    g.setLineDash([1, 4 * r / Game.doorWidthFactor])
     t.point.drawLine(g, h.node.point)
     g.setLineDash([])
     r /= Game.handleRadiusFactor
